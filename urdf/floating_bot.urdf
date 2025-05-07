@@ -1,0 +1,55 @@
+<robot name="floating_bot">
+  <link name="base_link">
+    <inertial>
+      <mass value="5.0"/>
+      <origin xyz="0 0 0"/>
+      <inertia ixx="0.1" iyy="0.1" izz="0.1" ixy="0" ixz="0" iyz="0"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.5 0.5 0.5"/>
+      </geometry>
+      <material name="blue">
+        <color rgba="0 0 1 1"/>
+      </material>
+    </visual>
+    <collision>
+      <geometry>
+        <box size="0.5 0.5 0.5"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- 3D movement plugin -->
+  <gazebo>
+    <plugin name="force_based_move" filename="libgazebo_ros_force_based_move.so">
+      <robotNamespace>/</robotNamespace>
+      <bodyName>base_link</bodyName>
+      <topicName>cmd_vel</topicName>
+      <frameId>odom</frameId>
+    </plugin>
+    </gazebo>
+
+  <!-- Odom plugin -->
+  <gazebo>
+  <plugin name="odom_publisher" filename="libgazebo_ros_p3d.so">
+    <alwaysOn>true</alwaysOn>
+    <publish_tf>true</publish_tf>
+    <updateRate>50.0</updateRate>
+    <bodyName>base_link</bodyName>
+    <topicName>odom</topicName>
+    <frameName>map</frameName>
+    <childFrameId>base_link</childFrameId>
+    <gaussianNoise>0.0</gaussianNoise>
+    <covariance>
+      0.01 0 0 0 0 0
+      0 0.01 0 0 0 0
+      0 0 0.01 0 0 0
+      0 0 0 0.01 0 0
+      0 0 0 0 0.01 0
+      0 0 0 0 0 0.01
+    </covariance>
+  </plugin>
+</gazebo>
+
+</robot>

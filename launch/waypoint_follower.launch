@@ -1,0 +1,9 @@
+<launch>
+  <!-- Load all parameters under the correct namespace -->
+  <rosparam file="$(find robot_guidance)/config/waypoint_follower_params.yaml" command="load" />
+
+  <!-- Start the node, using the same namespace as in the YAML -->
+  <node name="waypoint_follower" pkg="robot_guidance" type="waypoint_follower.py" output="screen" ns="waypoint_follower" />
+
+  <node name="velocity_integrator" pkg="robot_guidance" type="velocity_integrator.py" output="screen" />
+</launch>

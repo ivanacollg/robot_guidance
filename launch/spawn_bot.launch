@@ -1,0 +1,22 @@
+<launch>
+  <!-- Start Gazebo empty world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" />
+
+  <!-- Static Transform from world to odom -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="world_to_odom" args="0 0 0 0 0 0 world odom" />  
+  
+  <!-- Spawn the floating robot -->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find robot_guidance)/urdf/floating_bot.urdf'" />
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+        args="-param robot_description -urdf -model floating_bot"
+        output="screen" />
+
+  <!-- Sate publisher -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen">
+    <!--param name="robot_description" command="$(find robot_guidance)/urdf/floating_bot.urdf"/-->
+  </node>
+
+
+
+
+</launch>
