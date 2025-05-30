@@ -13,14 +13,15 @@ source ~/ros2_venv/bin/activate
 
 ### Install Dependencies
 
-```
-pip install dt-apriltags
-sudo apt install ros-jazzy-usb-cam
-```
-
 Ros2 works with numpy 1:
 ```
     pip install 'numpy<2'
+```
+
+```
+pip install dt-apriltags
+sudo apt install ros-jazzy-usb-cam
+pip intall scipy
 ```
 
 ## Parameters

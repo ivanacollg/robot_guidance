@@ -17,6 +17,8 @@ setup(
         (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
         # Optionally: install rviz config
         (os.path.join('share', package_name, 'rviz'), glob('rviz/*.rviz')),
+        # Config files
+        ('share/' + package_name + '/config', glob('config/*.yaml')),
     ],
     install_requires=['setuptools', 'dt-apriltags'],
     zip_safe=True,
@@ -27,7 +29,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'apriltag_follower = robot_guidance.apriltag_follower:main'
+            'apriltag_follower = robot_guidance.apriltag_follower:main',
+            'waypoint_follower = robot_guidance.waypoint_follower:main',
+            'velocity_integrator = robot_guidance.velocity_integrator:main',
         ],
     },
 )
