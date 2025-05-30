@@ -1,8 +1,0 @@
-<launch>
-    <!-- Topics -->
-    <arg name="raw_img_topic" default="/camera/image_raw/compressed"/>
-
-    <node pkg="robot_guidance" name="yolo_detect_node" type="yolo_detect.py" output="screen">
-        <param name="image_sub" type="str" value="$(arg raw_img_topic)"/>
-    </node>
-</launch>
