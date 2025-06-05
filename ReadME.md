@@ -21,6 +21,7 @@ Ros2 works with numpy 1:
 ```
 pip install dt-apriltags
 sudo apt install ros-jazzy-usb-cam
+sudo apt install ros-jazzy-apriltag-msgs
 pip intall scipy
 ```
 
