@@ -1,0 +1,17 @@
+waypoint_follower:
+  ros__parameters:
+    # Velocity gains
+    vx: 0.5
+    vy: 0.5
+    vz: 0.5
+    vyaw: 0.3
+  
+    # Maximum velocities
+    max_vx: 1.0
+    max_vy: 1.0
+    max_vz: 0.5
+    max_vyaw: 1.0
+  
+    # Stop thresholds
+    pos_threshold: 0.1
+    yaw_threshold: 0.05
