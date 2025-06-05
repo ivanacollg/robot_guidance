@@ -33,7 +33,7 @@ setup(
             'waypoint_follower = robot_guidance.waypoint_follower:main',
             'velocity_integrator = robot_guidance.velocity_integrator:main',
             'depth_control_server = robot_guidance.depth_control_server:main',
-            'apriltag_navigator_server = robot_guidance.apriltag_navigator_server:main',
+            'apriltag_navigation_server = robot_guidance.apriltag_navigation_server:main',
         ],
     },
 )

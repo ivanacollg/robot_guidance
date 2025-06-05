@@ -60,8 +60,22 @@ class DepthControlServer(Node):
         while rclpy.ok() and self._active:
             if self.current_depth is None:
                 self.get_logger().warn('Waiting for valid depth from odometry...')
+                
+                if goal_handle.is_cancel_requested:
+                    self.get_logger().info('Goal canceled.')
+                    self.stop()
+                    goal_handle.canceled()
+                    return GoToDepth.Result(success=False)
+                
                 await rate.sleep()
-            continue
+                continue
+
+            if goal_handle.is_cancel_requested:
+                self.get_logger().info('Goal canceled.')
+                self.stop()
+                goal_handle.canceled()
+                return GoToDepth.Result(success=False)
+
             error = target_depth - self.current_depth
             self.get_logger().info(f'Current Z: {self.current_depth:.2f}, Target: {target_depth}, Error: {error:.2f}')
 

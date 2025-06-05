@@ -4,7 +4,7 @@
   <version>0.1.0</version>
   <description>AprilTag follower node for robot navigation</description>
 
-  <maintainer email="your_email@example.com">Your Name</maintainer>
+  <maintainer email="icollado@stevens.edu">Ivana Collado</maintainer>
   <license>MIT</license>
 
   <!-- Core dependencies -->

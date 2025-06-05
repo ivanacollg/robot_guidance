@@ -21,10 +21,29 @@ from scipy.spatial.transform import Rotation
 
 from robot_guidance_interfaces.action import NavigateAprilTags  # Assume custom action interface defined
 
-class AprilTagNavigator(Node):
+class AprilTagNavigation(Node):
 
     def __init__(self):
-        super().__init__('apriltag_navigator_server')
+        super().__init__('apriltag_navigation_server')
+        # Get topic nameSs
+        self.declare_parameter('tag_detections_topic', '/tag_detections')
+        self.declare_parameter('odom_topic', '/odom')
+        tag_topic = self.get_parameter('tag_detections_topic').get_parameter_value().string_value
+        odom_topic = self.get_parameter('odom_topic').get_parameter_value().string_value
+
+        self.tag_sub = self.create_subscription(
+            AprilTagDetectionArray,
+            tag_topic,
+            self.tag_callback,
+            10
+        )
+
+        self.odom_sub = self.create_subscription(
+            Odometry,
+            odom_topic,
+            self.odom_callback,
+            10
+        )
 
         self.navigator = BasicNavigator()
         self._action_server = ActionServer(
@@ -38,20 +57,6 @@ class AprilTagNavigator(Node):
 
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
-
-        self.subscription = self.create_subscription(
-            AprilTagDetectionArray,
-            '/tag_detections',
-            self.tag_callback,
-            10
-        )
-
-        self.odom_sub = self.create_subscription(
-            Odometry,
-            '/odom',
-            self.odom_callback,
-            10
-        )
 
         self.current_detections = {}
         self.latest_odom = None
@@ -267,7 +272,7 @@ class AprilTagNavigator(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    navigator = AprilTagNavigator()
+    navigator = AprilTagNavigation()
     rclpy.spin(navigator)
     rclpy.shutdown()
 
