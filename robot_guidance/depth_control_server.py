@@ -41,7 +41,7 @@ class DepthControlServer(Node):
     def odom_callback(self, msg):
         self.current_depth = msg.pose.pose.position.z
 
-    def goal_callback(self, goal_request, _):
+    def goal_callback(self, goal_request):
         self.get_logger().info('Received goal request')
         return GoalResponse.ACCEPT
 

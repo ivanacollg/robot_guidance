@@ -51,6 +51,15 @@ ros2 launch robot_guidance april_tag_follower_launch.py
 
 ```
 
+# Run 
+```
+ros2 run robot_guidance depth_control_server
+```
+New terminal send Goal:
+```
+ros2 action send_goal /go_to_depth robot_guidance_interfaces/action/GoToDepth "{target_depth: 1.5}"
+```
+
 # To Do:
 - Add Camera calibration instructions
 ```
