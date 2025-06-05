@@ -13,16 +13,22 @@ source ~/ros2_venv/bin/activate
 
 ### Install Dependencies
 
+System wide intalls:
+```
+sudo apt install ros-jazzy-usb-cam
+sudo apt install ros-jazzy-apriltag-msgs
+
+```
+Install inside your python environment: 
+```
+pip intall scipy
+pip install empy
+pip install catkin_pkg
+pip install lark-parser
+```
 Ros2 works with numpy 1:
 ```
     pip install 'numpy<2'
-```
-
-```
-pip install dt-apriltags
-sudo apt install ros-jazzy-usb-cam
-sudo apt install ros-jazzy-apriltag-msgs
-pip intall scipy
 ```
 
 ## Parameters
@@ -41,19 +47,22 @@ ffplay /dev/video0
 ```
 
 ## Build
+Inside your ROS2 workspace folder:
 ```
 colcon build
+source install/setup.bash
+
 ```
 
 ## Launch 
 ```
-ros2 launch robot_guidance april_tag_follower_launch.py 
+ros2 launch robot_guidance_pkg april_tag_follower_launch.py 
 
 ```
 
 # Run 
 ```
-ros2 run robot_guidance depth_control_server
+ros2 run robot_guidance_pkg depth_control_server
 ```
 New terminal send Goal:
 ```

@@ -10,18 +10,19 @@ def generate_launch_description():
     env = os.environ.copy()
     env['PYTHONPATH'] = f"/home/ivana/ros2_venv/lib/python3.12/site-packages:{env.get('PYTHONPATH', '')}"
     # Parameter file path
-    pkg_path = get_package_share_directory('robot_guidance')
-    #param_file = os.path.join(pkg_path, 'config', 'depth_control_params.yaml')
+    pkg_path = get_package_share_directory('robot_guidance_pkg')
+    param_file = os.path.join(pkg_path, 'config', 'depth_control_params.yaml')
 
     return LaunchDescription([
 
         Node(
-            package='robot_guidance',
-            executable='apriltag_navigation_server',
-            name='apriltag_navigation_server',
+            package='robot_guidance_pkg',
+            executable='depth_control_server',
+            name='depth_control_server',
             parameters=[
+                param_file,
                 {
-                    'tag_detections_topic': '/tag_detections',
+                    'cmd_vel_topic': '/cmd_vel',
                     'odom_topic': '/odom'
                 }
             ],
