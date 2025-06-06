@@ -4,6 +4,10 @@ from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from robot_guidance_interfaces.action import GoToDepth
+
+from rclpy.executors import MultiThreadedExecutor
+from rclpy.callback_groups import ReentrantCallbackGroup
+
 import math
 
 class DepthControlServer(Node):
@@ -30,9 +34,10 @@ class DepthControlServer(Node):
             self,
             GoToDepth,
             'go_to_depth',
-            self.execute_callback,
-            goal_callback=self.goal_callback,
-            cancel_callback=self.cancel_callback
+            goal_callback=self.goal_callback,   
+            cancel_callback=self.cancel_callback,
+            execute_callback=self.execute_callback,
+            callback_group=ReentrantCallbackGroup()
         )
 
         self.current_depth = None  # z from odometry
@@ -45,12 +50,15 @@ class DepthControlServer(Node):
         self.get_logger().info('Received goal request')
         return GoalResponse.ACCEPT
 
+# ros2 action send_goal /go_to_depth robot_guidance_interfaces/action/GoToDepth "{target_depth: 1.5}"  - sending a goal
+# ros2 service call /go_to_depth/_action/cancel_goal action_msgs/srv/CancelGoal "{}"  - Cancels all goals
+
     def cancel_callback(self, goal_handle):
         self.get_logger().info('Received cancel request')
         self.stop()
         return CancelResponse.ACCEPT
 
-    async def execute_callback(self, goal_handle):
+    def execute_callback(self, goal_handle):
         self.get_logger().info('Executing goal...')
         target_depth = float(goal_handle.request.target_depth)
 
@@ -67,7 +75,7 @@ class DepthControlServer(Node):
                     goal_handle.canceled()
                     return GoToDepth.Result(success=False)
                 
-                await rate.sleep()
+                rate.sleep()
                 continue
 
             if goal_handle.is_cancel_requested:
@@ -94,7 +102,7 @@ class DepthControlServer(Node):
             cmd = Twist()
             cmd.linear.z = max(min(self.Kp * error, self.max_velocity), -self.max_velocity)
             self.cmd_pub.publish(cmd)
-            await rate.sleep()
+            rate.sleep()
 
         self.stop()
         goal_handle.abort()
@@ -109,7 +117,7 @@ def main(args=None):
     rclpy.init(args=args)
     server = DepthControlServer()
     try:
-        rclpy.spin(server)
+        rclpy.spin(server, MultiThreadedExecutor())
     except KeyboardInterrupt:
         pass
     finally:
