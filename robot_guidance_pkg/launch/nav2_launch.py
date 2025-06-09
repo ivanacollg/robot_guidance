@@ -11,11 +11,13 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     use_sim_time = LaunchConfiguration('use_sim_time')
     simple_simulation = LaunchConfiguration('simple_simulation')
+    use_rviz = LaunchConfiguration('use_rviz')
 
     # Parameter file path
     pkg_path = get_package_share_directory('robot_guidance_pkg')
     map_file = os.path.join(pkg_path, 'maps', 'empty_map.yaml')
     param_file = os.path.join(pkg_path, 'config', 'nav2_params.yaml')
+    rviz_file = os.path.join(pkg_path, 'rviz', 'nav2.rviz')
 
     return LaunchDescription([
         DeclareLaunchArgument(
@@ -28,6 +30,11 @@ def generate_launch_description():
             'simple_simulation',
             default_value='true',
             description='Launch simple simulation nodes like velocity integrator and static transform'
+        ),
+        DeclareLaunchArgument(
+            'use_rviz',
+            default_value='true',
+            description='Whether to launch RViz'
         ),
 
         # Map server node
@@ -116,7 +123,7 @@ def generate_launch_description():
                 output='screen',
                 parameters=[{'use_sim_time': use_sim_time}]
             ),
-            
+
             Node(
                 package='robot_guidance_pkg',
                 executable='velocity_integrator',
@@ -128,5 +135,15 @@ def generate_launch_description():
                     'odom_topic': '/odom'
                 }]
             )
-        ], condition=IfCondition(simple_simulation))
+        ], condition=IfCondition(simple_simulation)),
+
+        # RViz (conditionally launched)
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz',
+            arguments=['-d', rviz_file],
+            condition=IfCondition(use_rviz),
+            output='screen'
+        ),
     ])

@@ -26,6 +26,10 @@ controller_server:
   ros__parameters:
     use_sim_time: false
     controller_plugins: ["FollowPath"]
+    current_goal_checker: "goal_checker"
+    goal_checker_plugins: ["goal_checker"]
+    current_progress_checker: "progress_checker"
+    progress_checker_plugins: ["progress_checker"]
     #FollowPath:
     #  plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
     #  desired_linear_vel: 0.5
@@ -35,15 +39,14 @@ controller_server:
     #  rotate_to_heading_angular_vel: 0.6
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
-
       debug_trajectory_details: true
       min_vel_x: 0.0
       min_vel_y: 0.0
-      max_vel_x: 0.26
-      max_vel_y: 0.0
-      max_vel_theta: 1.0
+      max_vel_x: 0.3
+      max_vel_y: 0.3
+      max_vel_theta: 0.3
       min_speed_xy: 0.0
-      max_speed_xy: 0.26
+      max_speed_xy: 0.3
       min_speed_theta: 0.0
       acc_lim_x: 2.5
       acc_lim_theta: 3.2
@@ -63,6 +66,16 @@ controller_server:
       PathAlign.scale: 32.0
       PathDist.scale: 32.0
       GoalAlign.scale: 24.0
+
+      goal_checker:
+        plugin: "nav2_controller::SimpleGoalChecker"
+        xy_goal_tolerance: 0.10   # meters
+        yaw_goal_tolerance: 0.10  # radians
+        stateful: true
+      progress_checker:
+        plugin: "nav2_controller::SimpleProgressChecker"
+        required_movement_radius: 0.5  # meters
+        movement_time_allowance: 10.0  # seconds
 
 
 planner_server:
@@ -116,6 +129,9 @@ local_costmap:
       update_frequency: 5.0
       publish_frequency: 2.0
       resolution: 0.05
+      width: 6           # <-- Add this
+      height: 6          # <-- And this
+      rolling_window: true           # <-- This keeps robot centered
       robot_radius: 0.2
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
