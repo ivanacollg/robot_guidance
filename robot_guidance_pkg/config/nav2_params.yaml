@@ -25,11 +25,6 @@ map_server:
 controller_server:
   ros__parameters:
     use_sim_time: false
-    controller_plugins: ["FollowPath"]
-    current_goal_checker: "goal_checker"
-    goal_checker_plugins: ["goal_checker"]
-    current_progress_checker: "progress_checker"
-    progress_checker_plugins: ["progress_checker"]
     #FollowPath:
     #  plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
     #  desired_linear_vel: 0.5
@@ -37,6 +32,7 @@ controller_server:
     #  min_lookahead_dist: 0.3
     #  lookahead_time: 1.5
     #  rotate_to_heading_angular_vel: 0.6
+    controller_plugins: ["FollowPath"]
     FollowPath:
       plugin: "dwb_core::DWBLocalPlanner"
       debug_trajectory_details: true
@@ -66,16 +62,23 @@ controller_server:
       PathAlign.scale: 32.0
       PathDist.scale: 32.0
       GoalAlign.scale: 24.0
+    
+    # Goal checker plugin setup
+    current_goal_checker: "simple_goal_checker"
+    goal_checker_plugins: ["simple_goal_checker"]
+    simple_goal_checker:
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.25
+      stateful: false
 
-      goal_checker:
-        plugin: "nav2_controller::SimpleGoalChecker"
-        xy_goal_tolerance: 0.10   # meters
-        yaw_goal_tolerance: 0.10  # radians
-        stateful: true
-      progress_checker:
-        plugin: "nav2_controller::SimpleProgressChecker"
-        required_movement_radius: 0.5  # meters
-        movement_time_allowance: 10.0  # seconds
+    # Progress checker plugin setup
+    current_progress_checker: "simple_progress_checker"
+    progress_checker_plugins: ["simple_progress_checker"]
+    simple_progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.5
+      movement_time_allowance: 10.0
 
 
 planner_server:
