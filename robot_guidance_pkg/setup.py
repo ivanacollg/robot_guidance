@@ -17,6 +17,9 @@ setup(
         (os.path.join('share', package_name, 'launch'), glob('launch/*.py')),
         # Optionally: install rviz config
         (os.path.join('share', package_name, 'rviz'), glob('rviz/*.rviz')),
+        # Install map files
+        (os.path.join('share', package_name, 'maps'), glob('maps/*.yaml')),
+                (os.path.join('share', package_name, 'maps'), glob('maps/*.pgm')),
         # Config files
         ('share/' + package_name + '/config', glob('config/*.yaml')),
     ],
@@ -35,6 +38,7 @@ setup(
             'depth_control_server = robot_guidance_pkg.depth_control_server:main',
             'depth_control_client = robot_guidance_pkg.depth_control_client:main',
             'apriltag_navigation_server = robot_guidance_pkg.apriltag_navigation_server:main',
+            'simple_nav2_client = robot_guidance_pkg.simple_nav2_client:main',
         ],
     },
 )

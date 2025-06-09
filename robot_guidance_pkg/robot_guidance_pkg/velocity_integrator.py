@@ -2,15 +2,23 @@
 import math
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist, Quaternion
+from geometry_msgs.msg import Twist, Quaternion, TransformStamped
 from nav_msgs.msg import Odometry
 from scipy.spatial.transform import Rotation as R
 from builtin_interfaces.msg import Time
-
+from tf2_ros import TransformBroadcaster
 
 class VelocityIntegrator(Node):
     def __init__(self):
         super().__init__('velocity_integrator')
+
+         # Declare topics with defaults
+        self.declare_parameter('cmd_vel_topic', '/cmd_vel')
+        self.declare_parameter('odom_topic', '/odom')
+        cmd_vel_topic = self.get_parameter('cmd_vel_topic').get_parameter_value().string_value
+        odom_topic = self.get_parameter('odom_topic').get_parameter_value().string_value
+        self.create_subscription(Twist, cmd_vel_topic, self.velocity_callback, 10)
+        self.odom_pub = self.create_publisher(Odometry, odom_topic, 10)
 
         self.x = 0.0
         self.y = 0.0
@@ -20,8 +28,7 @@ class VelocityIntegrator(Node):
         self.last_time = self.get_clock().now()
         self.current_velocity = Twist()
 
-        self.create_subscription(Twist, '/cmd_vel', self.velocity_callback, 10)
-        self.odom_pub = self.create_publisher(Odometry, '/odom', 10)
+        self.tf_broadcaster = TransformBroadcaster(self)
 
         # Timer at 20 Hz
         self.create_timer(0.05, self.update_odometry)
@@ -67,6 +74,19 @@ class VelocityIntegrator(Node):
         odom.twist.twist = self.current_velocity
 
         self.odom_pub.publish(odom)
+
+        # Publish transform from odom to base_link
+        tf = TransformStamped()
+        tf.header.stamp = odom.header.stamp
+        tf.header.frame_id = 'odom'
+        tf.child_frame_id = 'base_link'
+
+        tf.transform.translation.x = self.x
+        tf.transform.translation.y = self.y
+        tf.transform.translation.z = self.z
+        tf.transform.rotation = odom.pose.pose.orientation
+
+        self.tf_broadcaster.sendTransform(tf)
 
 
 def main(args=None):

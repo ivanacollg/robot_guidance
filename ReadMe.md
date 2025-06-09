@@ -55,9 +55,13 @@ source install/setup.bash
 ```
 
 ## Launch 
+Launch April tag follower:
 ```
 ros2 launch robot_guidance_pkg april_tag_follower_launch.py 
-
+```
+Launch Nav2 stack with velocity integrator:
+```
+ros2 launch robot_guidance_pkg nav2_launch.py 
 ```
 
 # Run 

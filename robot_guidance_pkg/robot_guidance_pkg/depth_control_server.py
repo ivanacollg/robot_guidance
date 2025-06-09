@@ -63,9 +63,9 @@ class DepthControlServer(Node):
         target_depth = float(goal_handle.request.target_depth)
 
         rate = self.create_rate(10)
-        self._active = True
+        self.active = True
 
-        while rclpy.ok() and self._active:
+        while rclpy.ok() and self.active:
             if self.current_depth is None:
                 self.get_logger().warn('Waiting for valid depth from odometry...')
                 

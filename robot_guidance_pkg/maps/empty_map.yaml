@@ -1,0 +1,6 @@
+image: empty_map.pgm
+resolution: 0.01  # meters/pixel
+origin: [0.0, 0.0, 0.0]  # [x, y, yaw] in meters/radians
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
