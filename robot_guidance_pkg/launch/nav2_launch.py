@@ -86,19 +86,6 @@ def generate_launch_description():
             parameters=[param_file, {'use_sim_time': use_sim_time}]
         ),
 
-        # Lifecycle manager
-        Node(
-            package='nav2_lifecycle_manager',
-            executable='lifecycle_manager',
-            name='lifecycle_manager_navigation',
-            output='screen',
-            parameters=[{
-                'use_sim_time': use_sim_time,
-                'autostart': True,
-                'node_names': ['map_server', 'controller_server', 'planner_server', 'behavior_server', 'bt_navigator']
-            }]
-        ),
-
         # Waypoint follower
         #Node(
         #    package='nav2_waypoint_follower',
@@ -131,12 +118,12 @@ def generate_launch_description():
             Node(
                 package='robot_guidance_pkg',
                 executable='velocity_integrator',
-                name='velocity_integrator',
+                name='amcl',
                 output='screen',
                 parameters=[{
                     'use_sim_time': use_sim_time,
                     'cmd_vel_topic': '/cmd_vel',
-                    'odom_topic': '/odom'
+                    'odom_topic': '/odom',
                 }]
             )
         ], condition=IfCondition(simple_simulation)),
@@ -149,5 +136,19 @@ def generate_launch_description():
             arguments=['-d', rviz_file],
             condition=IfCondition(use_rviz),
             output='screen'
+        ),
+
+                # Lifecycle manager
+        Node(
+            package='nav2_lifecycle_manager',
+            executable='lifecycle_manager',
+            name='lifecycle_manager_navigation',
+            output='screen',
+            parameters=[{
+                'use_sim_time': use_sim_time,
+                'autostart': True,
+                'bond_timeout': 0.0, # Fix to allow velocity integrator localization without bonding
+                'node_names': ['map_server', 'amcl', 'controller_server', 'planner_server', 'behavior_server', 'bt_navigator']
+            }]
         ),
     ])
