@@ -17,7 +17,8 @@ System wide intalls:
 ```
 sudo apt install ros-jazzy-usb-cam
 sudo apt install ros-jazzy-apriltag-msgs
-
+sudo apt install ros-jazzy-apriltag-ros
+sudo apt install ros-jazzy-image-proc
 ```
 Install inside your python environment: 
 ```
