@@ -18,7 +18,7 @@ def generate_launch_description():
         Node(
             package='robot_guidance_pkg',
             executable='apriltag_navigation_server',
-            name='apriltag_navigation_server',
+            #name='apriltag_navigation_server', # FIx for not getting doubled nodes -> if not it renames the basic navigator 
             parameters=[
                 {
                     'tag_detections_topic': '/tag_detections',
