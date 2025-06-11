@@ -13,13 +13,13 @@ def generate_launch_description():
     env = os.environ.copy()
     env['PYTHONPATH'] = f"/home/ivana/ros2_venv/lib/python3.12/site-packages:{env.get('PYTHONPATH', '')}"
     # Parameter file path
-    pkg_path = get_package_share_directory('robot_guidance')
+    pkg_path = get_package_share_directory('robot_guidance_pkg')
     param_file = os.path.join(pkg_path, 'config', 'waypoint_follower_params.yaml')
 
     return LaunchDescription([
         # Node for waypoint_follower with parameters and namespace
         Node(
-            package='robot_guidance',
+            package='robot_guidance_pkg',
             executable='waypoint_follower',
             name='waypoint_follower',
             namespace='waypoint_follower',
@@ -29,7 +29,7 @@ def generate_launch_description():
         ),
 
         Node(
-            package='robot_guidance',
+            package='robot_guidance_pkg',
             executable='velocity_integrator',
             name='velocity_integrator',
             output='screen',

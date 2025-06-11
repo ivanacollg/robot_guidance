@@ -13,7 +13,7 @@ def generate_launch_description():
     env = os.environ.copy()
     env['PYTHONPATH'] = f"/home/ivana/ros2_venv/lib/python3.12/site-packages:{env.get('PYTHONPATH', '')}"
 
-    pkg_share = get_package_share_directory('robot_guidance')
+    pkg_share = get_package_share_directory('robot_guidance_pkg')
     rviz_default_config = os.path.join(pkg_share, 'rviz', 'apriltag.rviz')
 
     return LaunchDescription([
@@ -53,7 +53,7 @@ def generate_launch_description():
 
         # AprilTag follower node
         Node(
-            package='robot_guidance',
+            package='robot_guidance_pkg',
             executable='apriltag_follower',
             name='apriltag_follower_node',
             output='screen',
