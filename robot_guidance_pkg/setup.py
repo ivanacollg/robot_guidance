@@ -34,6 +34,7 @@ setup(
             'velocity_integrator = robot_guidance_pkg.velocity_integrator:main',
             'depth_control_server = robot_guidance_pkg.depth_control_server:main',
             'depth_control_client = robot_guidance_pkg.depth_control_client:main',
+            'depth_control_client2 = robot_guidance_pkg.depth_control_client2:main',
             'apriltag_navigation_server = robot_guidance_pkg.apriltag_navigation_server:main',
         ],
     },

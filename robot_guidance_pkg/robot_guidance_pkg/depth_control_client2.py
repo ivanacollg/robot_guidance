@@ -4,68 +4,54 @@ from rclpy.action import ActionClient
 from rclpy.action.client import GoalStatus
 from robot_guidance_interfaces.action import GoToDepth
 
+import asyncio
 
-class DepthControlClient(Node):
+class DepthControlClient2(Node):
     def __init__(self):
-        super().__init__('depth_control_client')
+        super().__init__('depth_control_client2')
         self.action_client = ActionClient(
             self, 
             GoToDepth,
             'go_to_depth',
         )
 
-
     # called when robot wants to move to new depth, returns None
-    def send_goal(self, target_depth):
-        # wait for server to be running
+    async def send_goal(self, target_depth):
         self.action_client.wait_for_server()
-
-        # create and set goal
         goal = GoToDepth.Goal()
         goal.target_depth = target_depth
         
-        # send goal and set the feedback callback func
         self.get_logger().info('Sending goal: Target Depth = ' + str(target_depth))
         sending = self.action_client
-        future_server_response = sending.send_goal_async(goal, feedback_callback=self.goal_feedback_callback) 
+        future_server_response = sending.send_goal_async(goal, feedback_callback=self.goal_feedback_callback)
+        self.goal_handle = await future_server_response
 
-        # call goal_response_callback when server responds to client
-        future_server_response.add_done_callback(self.goal_response_callback) 
-
-
-    # called when server responds about accept/reject of goal
-    def goal_response_callback(self, server_response):
-        self.goal_handle = server_response.result() # get goal handle
-        if not self.goal_handle.accepted: # check if goal not accepted
+        if not self.goal_handle.accepted:
             self.get_logger().warn('Goal Rejected')
             return
-        
-        future_server_result = self.goal_handle.get_result_async() # wait for result of goal
-        future_server_result.add_done_callback(self.goal_result_callback) # call goal_result_callback when goal completed
+        future_server_result = self.goal_handle.get_result_async()
 
-
-    # called when goal completed and result received by client 
-    def goal_result_callback(self, server_result): 
-        service_result = server_result.result() # get service result
+        service_result = await future_server_result
         status = service_result.status   # ClientGoalHandle goal status
         result = service_result.result   # action specific result
 
-        if status == GoalStatus.STATUS_SUCCEEDED: # check and print goal status
+        if status == GoalStatus.STATUS_SUCCEEDED:
             self.get_logger().info("Success")
         elif status == GoalStatus.STATUS_ABORTED:
             self.get_logger().error("Aborted")
         elif status == GoalStatus.STATUS_CANCELED:
             self.get_logger().warn("Canceled")
-        self.get_logger().info("Result: " + str(result.reached_final_depth)) # print result
 
-
-    # called when feedback is published by the server
-    def goal_feedback_callback(self, feedback_msg):
+        self.get_logger().info("Result: " + str(result.reached_final_depth))
+        
+        
+    # called when feedback is published by the server, returns None
+    def goal_feedback_callback(self, feedback_msg):  
         current_depth = feedback_msg.feedback.current_depth
         self.get_logger().info("Current depth: " + str(current_depth))
 
 
-    # called when robot wants to cancel goal request
+    # called when robot wants to cancel goal request, returns None
     def cancel_goal(self):
         self.get_logger().info("Send a cancel request")
         self.goal_handle.cancel_goal_async()  # sends cancel request to server
@@ -73,10 +59,21 @@ class DepthControlClient(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    client = DepthControlClient()
-    client.send_goal(1.5)
+    client = DepthControlClient2()
+
+    # gets pythons default event loop
+    # allows us to run async def funcs using await
+    loop = asyncio.get_event_loop()
+
+    # creates an executor, adds the node, and spins it in a background thread
+    # this makes it so that await still works in the main thread
+    executor = rclpy.executors.SingleThreadedExecutor()
+    executor.add_node(client)
+    loop.run_in_executor(None, executor.spin)
+    
     try:
-        rclpy.spin(client)
+        # this calls the async func, send_goal, until it is completed
+        loop.run_until_complete(client.send_goal(1.5))
     except KeyboardInterrupt:
         pass
     finally:
