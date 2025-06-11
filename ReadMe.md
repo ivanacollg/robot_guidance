@@ -20,6 +20,10 @@ sudo apt install ros-jazzy-apriltag-msgs
 sudo apt install ros-jazzy-apriltag-ros
 sudo apt install ros-jazzy-image-proc
 sudo apt install ros-jazzy-nav2-lifecycle-manager
+sudo apt install ros-jazzy-v4l2-camera
+sudo apt install ros-jazzy-image-pipeline
+sudo apt install ros-jazzy-navigation2
+sudo apt install ros-jazzy-nav2-bringup
 ```
 Install inside your python environment: 
 ```
@@ -34,8 +38,8 @@ Ros2 works with numpy 1:
 ```
 
 ## Parameters
-### Launch File Porametes
-- ```env['PYTHONPATH'] ``` Ensures  you use your virtual environment
+### Launch File Parameters
+- ```env['PYTHONPATH']``` Ensures  you use your virtual environment
 
 - ```'video_device'``` Use the camera you want 
 
@@ -75,9 +79,12 @@ Run Depth Controller Client:
 ros2 run robot_guidance_pkg depth_control_client
 ```
 
-# To Do:
-- Add Camera calibration instructions
+## Camera Calibration
+Run Camera Calibration:
+```
+ros2 launch robot_guidance_pkg v4l2_camera_launch.py
+```
+In separate terminal:
 ```
 ros2 run camera_calibration cameracalibrator --size 8x6 --square 0.024 --ros-args --remap image:=/image_raw --remap camera:=/camera
 ```
-- Downsize image for faster computation 

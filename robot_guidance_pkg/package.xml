@@ -22,6 +22,8 @@
   <exec_depend>launch_ros</exec_depend>
   <exec_depend>usb_cam</exec_depend>
   <exec_depend>rviz2</exec_depend>
+  <exec_depend>navigation2</exec_depend>
+  <exec_depend>nav2_bringup</exec_depend>
 
   <!-- Python third-party dependencies (not installed by ROS) -->
   <exec_depend>python3-opencv</exec_depend>
