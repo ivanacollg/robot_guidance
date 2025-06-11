@@ -19,6 +19,7 @@ sudo apt install ros-jazzy-usb-cam
 sudo apt install ros-jazzy-apriltag-msgs
 sudo apt install ros-jazzy-apriltag-ros
 sudo apt install ros-jazzy-image-proc
+sudo apt install ros-jazzy-nav2-lifecycle-manager
 ```
 Install inside your python environment: 
 ```
@@ -52,7 +53,6 @@ Inside your ROS2 workspace folder:
 ```
 colcon build
 source install/setup.bash
-
 ```
 
 ## Launch April Tag Navigation
@@ -65,26 +65,12 @@ Launch April Tag Navigation:
 ros2 launch robot_guidance_pkg apriltag_navigation_server.py 
 ```
 
-# Run 
-### Run Server
+## Launch Depth Controller and Run Depth Controller Client
+Launch Depth Controller:
 ```
-ros2 run robot_guidance_pkg depth_control_server
+ros2 launch robot_guidance_pkg depth_controller_launch.py
 ```
-
-New terminal send Goal manually
-```
-ros2 action send_goal /go_to_depth robot_guidance_interfaces/action/GoToDepth "{target_depth: 1.5}"
-```
-
-New terminal cancel all Goals manually
-```
-ros2 service call /go_to_depth/_action/cancel_goal action_msgs/srv/CancelGoal "{}"
-```
-### Run Client
-```
-ros2 run robot_guidance_pkg apriltag_navigation_client 
-
-```
+Run Depth Controller Client:
 ```
 ros2 run robot_guidance_pkg depth_control_client
 ```
