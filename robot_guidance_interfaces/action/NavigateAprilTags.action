@@ -1,12 +1,12 @@
 # NavigateAprilTags.action
 
 # Goal
-string[] ids                 # List of AprilTag frame IDs (e.g., "tag36h11:0")
+int32[] ids                 # List of AprilTag frame IDs (e.g., "tag36h11:0")
 string[] commands            # Commands for each tag (e.g., "stop", "drive_on_heading")
 ---
 # Result
 bool navigation_completed                 # Whether the navigation sequence completed successfully
 ---
 # Feedback
-string current_tag           # Currently processing/detected tag
+int32 current_id           # Currently processing/detected tag
 string current_command       # Currently executing command

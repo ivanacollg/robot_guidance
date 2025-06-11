@@ -39,6 +39,9 @@ setup(
             'depth_control_client = robot_guidance_pkg.depth_control_client:main',
             'apriltag_navigation_server = robot_guidance_pkg.apriltag_navigation_server:main',
             'simple_nav2_client = robot_guidance_pkg.simple_nav2_client:main',
+            'apriltag_navigation_client = robot_guidance_pkg.apriltag_navigation_client:main',
+            'tag_map_publisher = robot_guidance_pkg.tag_map_publisher:main',
+            'straffing_control_server = robot_guidance_pkg.straffing_control_server:main',
         ],
     },
 )

@@ -1,0 +1,8 @@
+# Goal
+float64 target_y
+---
+# Result
+bool target_reached
+---
+# Feedback
+float64 current_y

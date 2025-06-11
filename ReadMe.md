@@ -55,14 +55,14 @@ source install/setup.bash
 
 ```
 
-## Launch 
-Launch April tag follower:
-```
-ros2 launch robot_guidance_pkg april_tag_follower_launch.py 
-```
-Launch Nav2 stack with velocity integrator:
+## Launch April Tag Navigation
+Launch Nav2 stack and other simulation necesities:
 ```
 ros2 launch robot_guidance_pkg nav2_launch.py 
+```
+Launch April Tag Navigation:
+```
+ros2 launch robot_guidance_pkg apriltag_navigation_server.py 
 ```
 
 # Run 
@@ -81,7 +81,10 @@ New terminal cancel all Goals manually
 ros2 service call /go_to_depth/_action/cancel_goal action_msgs/srv/CancelGoal "{}"
 ```
 ### Run Client
-current sample goal: target_depth = 1.5
+```
+ros2 run robot_guidance_pkg apriltag_navigation_client 
+
+```
 ```
 ros2 run robot_guidance_pkg depth_control_client
 ```
@@ -89,6 +92,6 @@ ros2 run robot_guidance_pkg depth_control_client
 # To Do:
 - Add Camera calibration instructions
 ```
-ros2 run camera_calibration cameracalibrator --size 8x6 --square 0.024 image:=/camera/image_raw camera:=/camera
+ros2 run camera_calibration cameracalibrator --size 8x6 --square 0.024 --ros-args --remap image:=/image_raw --remap camera:=/camera
 ```
 - Downsize image for faster computation 

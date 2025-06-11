@@ -17,6 +17,7 @@ def generate_launch_description():
     pkg_path = get_package_share_directory('robot_guidance_pkg')
     map_file = os.path.join(pkg_path, 'maps', 'empty_map.yaml')
     param_file = os.path.join(pkg_path, 'config', 'nav2_params.yaml')
+    tag_map_file = os.path.join(pkg_path, 'config', 'tag_map.yaml')
     rviz_file = os.path.join(pkg_path, 'rviz', 'nav2.rviz')
 
     return LaunchDescription([
@@ -100,7 +101,7 @@ def generate_launch_description():
             Node(
                 package='tf2_ros',
                 executable='static_transform_publisher',
-                name='static_tf_pub_tag5',
+                name='static_tf_map_odom',
                 arguments=[
                     '--x', '0.0',
                     '--y', '0.0',
@@ -116,6 +117,24 @@ def generate_launch_description():
             ),
 
             Node(
+                package='tf2_ros',
+                executable='static_transform_publisher',
+                name='static_tf_base_camera',
+                arguments=[
+                    '--x', '0.0',
+                    '--y', '0.0',
+                    '--z', '0.0',
+                    '--roll', '-1.5708 ',
+                    '--pitch', '0.0',
+                    '--yaw', '-1.5708 ',
+                    '--frame-id', 'base_link',
+                    '--child-frame-id', 'camera_frame'
+                ],
+                output='screen',
+                parameters=[{'use_sim_time': use_sim_time}]
+            ),
+
+            Node(
                 package='robot_guidance_pkg',
                 executable='velocity_integrator',
                 name='amcl',
@@ -125,7 +144,64 @@ def generate_launch_description():
                     'cmd_vel_topic': '/cmd_vel',
                     'odom_topic': '/odom',
                 }]
-            )
+            ),
+
+            Node(
+                package='v4l2_camera',
+                executable='v4l2_camera_node',
+                name='camera',
+                output='screen',
+                parameters=[{
+                    'use_sim_time': use_sim_time,
+                    'video_device': '/dev/video4',
+                    'image_size': [1920, 1080],
+                    'camera_frame_id': 'camera_frame',
+                    'pixel_format': 'YUYV',  # or 'MJPG' depending on your camera
+                    'io_method': 'mmap',
+                    'framerate': 30,
+                    'camera_info_url': ''  # Optional: Add path to your calibration .yaml file
+                }],
+                remappings=[
+                    ('/image_raw', '/image_raw'),  # Optional: match expected topic names
+                    ('/camera_info', '/camera_info')
+                ]
+            ),
+
+            # April Tag Detection
+            Node(
+                package='apriltag_ros',
+                executable='apriltag_node',
+                name='apriltag_node',
+                output='screen',
+                parameters=[{
+                    'use_sim_time': use_sim_time,
+                    'publish_tag_detections': True,
+                    'publish_tag_detections_image': True,
+                    'publish_tf': True,
+                    'camera_frame': 'camera_link',  
+                    'tag_family': 'tag36h11',
+                    'tag_size': 0.17,  # Tag size in meters
+                    'approximate_sync': True,  
+                }],
+                remappings=[
+                    ('image_rect', '/image_raw'),          # Adjust to your image topic
+                    ('camera_info', '/camera_info'),       # Adjust to your camera_info
+                    ('detections', '/tag_detections'),        # Output topic
+                ],
+                arguments=['--ros-args', '--log-level', 'error'],
+            ),
+
+            Node(
+                package='robot_guidance_pkg',
+                executable='tag_map_publisher',
+                name='tag_map_publisher',
+                output='screen',
+                parameters=[{
+                    'use_sim_time': use_sim_time,
+                    'tag_map_path': tag_map_file,
+                }]
+            ),
+
         ], condition=IfCondition(simple_simulation)),
 
         # RViz (conditionally launched)

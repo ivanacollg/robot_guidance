@@ -14,7 +14,8 @@ def generate_launch_description():
     env['PYTHONPATH'] = f"/home/ivana/ros2_venv/lib/python3.12/site-packages:{env.get('PYTHONPATH', '')}"
     # Parameter file path
     pkg_path = get_package_share_directory('robot_guidance_pkg')
-    #param_file = os.path.join(pkg_path, 'config', 'depth_control_params.yaml')
+    depth_control_param_file = os.path.join(pkg_path, 'config', 'depth_control_params.yaml')
+    straffing_control_param_file = os.path.join(pkg_path, 'config', 'straffing_control_params.yaml')
     use_rviz = LaunchConfiguration('use_rviz')
     use_sim_time = True
 
@@ -22,28 +23,8 @@ def generate_launch_description():
 
         DeclareLaunchArgument(
             'use_rviz',
-            default_value='true',
+            default_value='false',
             description='Whether to launch RViz'
-        ),
-
-        Node(
-            package='v4l2_camera',
-            executable='v4l2_camera_node',
-            name='camera',
-            parameters=[{
-                'use_sim_time': use_sim_time,
-                'video_device': '/dev/video4',
-                'image_size': [1920, 1080],
-                'camera_frame_id': 'camera_frame',
-                'pixel_format': 'YUYV',  # or 'MJPG' depending on your camera
-                'io_method': 'mmap',
-                'framerate': 30,
-                'camera_info_url': ''  # Optional: Add path to your calibration .yaml file
-            }],
-            remappings=[
-                ('/image_raw', '/image_raw'),  # Optional: match expected topic names
-                ('/camera_info', '/camera_info')
-            ]
         ),
 
         # USB Camera Node
@@ -76,40 +57,47 @@ def generate_launch_description():
         #    output='screen',
         #),
 
-        # April Tag Detection
+
         Node(
-            package='apriltag_ros',
-            executable='apriltag_node',
-            name='apriltag_node',
-            output='screen',
-            parameters=[{
-                'use_sim_time': use_sim_time,
-                'publish_tag_detections': True,
-                'publish_tag_detections_image': True,
-                'camera_frame': 'camera_link',  # Change to match your TF
-                'tag_family': 'tag36h11',
-                'tag_size': 0.17,  # Tag size in meters
-                'approximate_sync': True,  
-            }],
-            remappings=[
-                ('image_rect', '/image_raw'),          # Adjust to your image topic
-                ('camera_info', '/camera_info'),       # Adjust to your camera_info
-                ('detections', '/tag_detections'),        # Output topic
-            ]
+            package='robot_guidance_pkg',
+            executable='depth_control_server',
+            name='depth_control_server',
+            parameters=[
+                depth_control_param_file,
+                {
+                    'cmd_vel_topic': '/cmd_vel',
+                    'odom_topic': '/odom'
+                }
+            ],
+            env=env
         ),
 
-        #Node(
-        #    package='robot_guidance_pkg',
-        #    executable='apriltag_navigation_server',
-        #    #name='apriltag_navigation_server', # FIx for not getting doubled nodes -> if not it renames the basic navigator 
-        #    parameters=[
-        #        {
-        #            'tag_detections_topic': '/tag_detections',
-        #            'odom_topic': '/odom'
-        #        }
-        #    ],
-        #    env=env
-        #),
+        Node(
+            package='robot_guidance_pkg',
+            executable='straffing_control_server',
+            name='straffing_control_server',
+            parameters=[
+                straffing_control_param_file,
+                {
+                    'cmd_vel_topic': '/cmd_vel',
+                    'odom_topic': '/odom'
+                }
+            ],
+            env=env
+        ),
+
+        Node(
+            package='robot_guidance_pkg',
+            executable='apriltag_navigation_server',
+            #name='apriltag_navigation_server', # FIx for not getting doubled nodes -> if not it renames the basic navigator 
+            parameters=[
+                {
+                    'tag_detections_topic': '/tag_detections',
+                    'odom_topic': '/odom'
+                }
+            ],
+            env=env
+        ),
 
         # RViz (conditionally launched)
         Node(

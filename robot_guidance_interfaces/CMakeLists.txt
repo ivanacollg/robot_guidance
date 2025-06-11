@@ -9,6 +9,7 @@ find_package(rosidl_default_generators REQUIRED)
 # Declare interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/GoToDepth.action"
+  "action/GoToSide.action"
   "action/NavigateAprilTags.action"
   DEPENDENCIES builtin_interfaces
 )
