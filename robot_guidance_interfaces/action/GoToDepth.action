@@ -2,7 +2,7 @@
 float64 target_depth
 ---
 # Result
-bool success
+bool reached_final_depth
 ---
 # Feedback
 float64 current_depth
