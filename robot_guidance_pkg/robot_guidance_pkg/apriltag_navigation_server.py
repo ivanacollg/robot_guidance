@@ -57,7 +57,7 @@ class AprilTagNavigation(Node):
         )
         # GoToDepth  and DriveOnHeading action clients
         self.depth_control_client = ActionClient(self, GoToDepth, 'go_to_depth')
-        self.straffing_control_client = ActionClient(self, GoToSide, 'go_to_side')
+        self.strafe_control_client = ActionClient(self, GoToSide, 'go_to_side')
         # Transform Listener
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
@@ -279,22 +279,22 @@ class AprilTagNavigation(Node):
 
                 self.get_logger().info(f'Waiting for depth control server to start')
                 # Wait for server to be ready
-                if not self.straffing_control_client.wait_for_server(timeout_sec=5.0):
+                if not self.strafe_control_client.wait_for_server(timeout_sec=5.0):
                     self.get_logger().error("GoToSide action server not available after 5 seconds!")
                     goal_handle.abort()
                     return NavigateAprilTags.Result(navigation_complete=False)
                 # Send the goal
                 self.get_logger().info(f"Sending GoToSide goal to {tz:.2f} meters")
                 
-                send_goal_future = self.straffing_control_client.send_goal_async(y_goal)
-                straffing_goal_handle = await send_goal_future
+                send_goal_future = self.strafe_control_client.send_goal_async(y_goal)
+                strafe_goal_handle = await send_goal_future
 
-                if not straffing_goal_handle.accepted:
+                if not strafe_goal_handle.accepted:
                     self.get_logger().warn("Depth goal rejected")
                     goal_handle.abort()
                     return NavigateAprilTags.Result(navigation_complete = False)
             
-                result_response = await straffing_goal_handle.get_result_async()
+                result_response = await strafe_goal_handle.get_result_async()
                 
                 if not result_response.result.target_reached:
                     self.get_logger().warn("Depth goal failed")

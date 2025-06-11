@@ -15,7 +15,7 @@ def generate_launch_description():
     # Parameter file path
     pkg_path = get_package_share_directory('robot_guidance_pkg')
     depth_control_param_file = os.path.join(pkg_path, 'config', 'depth_control_params.yaml')
-    straffing_control_param_file = os.path.join(pkg_path, 'config', 'straffing_control_params.yaml')
+    strafe_control_param_file = os.path.join(pkg_path, 'config', 'strafe_control_params.yaml')
     use_rviz = LaunchConfiguration('use_rviz')
     use_sim_time = True
 
@@ -74,10 +74,10 @@ def generate_launch_description():
 
         Node(
             package='robot_guidance_pkg',
-            executable='straffing_control_server',
-            name='straffing_control_server',
+            executable='strafe_control_server',
+            name='strafe_control_server',
             parameters=[
-                straffing_control_param_file,
+                strafe_control_param_file,
                 {
                     'cmd_vel_topic': '/cmd_vel',
                     'odom_topic': '/odom'

@@ -10,9 +10,9 @@ from rclpy.callback_groups import ReentrantCallbackGroup
 
 import math
 
-class StraffingControlServer(Node):
+class StrafeControlServer(Node):
     def __init__(self):
-        super().__init__('straffing_control_server')
+        super().__init__('strafe_control_server')
 
         # Declare parameters with defaults
         self.declare_parameter('tolerance', 0.05)
@@ -115,7 +115,7 @@ class StraffingControlServer(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    server = StraffingControlServer()
+    server = StrafeControlServer()
     try:
         rclpy.spin(server, MultiThreadedExecutor())
     except KeyboardInterrupt:
