@@ -264,7 +264,7 @@ class AprilTagNavigation(Node):
             
                 result_response = await depth_goal_handle.get_result_async()
                 
-                if not result_response.result.success:
+                if not result_response.result.reached_final_depth:
                     self.get_logger().warn("Depth goal failed")
                     goal_handle.abort()
                     return NavigateAprilTags.Result(navigation_complete = False)
