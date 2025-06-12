@@ -28,7 +28,8 @@ class DepthControlClient(Node):
              if type(target_depth) == int:
                  target_depth = float(target_depth)
              else:
-                self.get_logger().warn('Invalid Goal Request. Input must be integer or float')
+                self.get_logger().warn('Invalid Goal Request. Input must be an integer or float')
+                self.create_timer(0.1, self.shutdown_node)
                 return
 
         goal.target_depth = target_depth
@@ -47,6 +48,7 @@ class DepthControlClient(Node):
         self.goal_handle = server_response.result() # get goal handle
         if not self.goal_handle.accepted: # check if goal not accepted
             self.get_logger().warn('Goal Rejected')
+            self.create_timer(0.1, self.shutdown_node)
             return
         
         future_server_result = self.goal_handle.get_result_async() # wait for result of goal
@@ -67,6 +69,8 @@ class DepthControlClient(Node):
             self.get_logger().warn("Canceled")
         self.get_logger().info("Result: " + str(result.reached_final_depth)) # print result
 
+        self.create_timer(0.1, self.shutdown_node)
+        return
 
     # called when feedback is published by the server
     def goal_feedback_callback(self, feedback_msg):
@@ -79,6 +83,8 @@ class DepthControlClient(Node):
         self.get_logger().info("Send a cancel request")
         self.goal_handle.cancel_goal_async()  # sends cancel request to server
 
+    def shutdown_node(self):
+        rclpy.shutdown()
 
 def main(args=None):
     rclpy.init(args=args)
@@ -89,8 +95,9 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
+        if rclpy.ok():  # Make sure we don’t double shutdown
+            rclpy.shutdown()
         client.destroy_node()
-        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
