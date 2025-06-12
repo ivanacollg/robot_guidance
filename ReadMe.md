@@ -84,6 +84,10 @@ Run Depth Controller Client:
 ```
 ros2 run robot_guidance_pkg depth_control_client
 ```
+Send Client Goal Request Manually: 
+```
+ros2 action send_goal /go_to_depth robot_guidance_interfaces/action/GoToDepth "{target_depth: 1.5}"
+```
 
 ## Camera Calibration
 Run Camera Calibration:
