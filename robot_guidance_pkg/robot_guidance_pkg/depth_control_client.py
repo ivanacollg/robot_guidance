@@ -22,6 +22,15 @@ class DepthControlClient(Node):
 
         # create and set goal
         goal = GoToDepth.Goal()
+
+        # check that goal is valid here before using the parameter target_depth anywhere
+        if not type(target_depth) == float:
+             if type(target_depth) == int:
+                 target_depth = float(target_depth)
+             else:
+                self.get_logger().warn('Invalid Goal Request. Input must be integer or float')
+                return
+
         goal.target_depth = target_depth
         
         # send goal and set the feedback callback func
