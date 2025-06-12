@@ -59,17 +59,23 @@ colcon build
 source install/setup.bash
 ```
 
-## Launch April Tag Navigation
+## Launch Apriltag Navigation and Run Apriltag Server
+*Camera must be calibrated first
+
 Launch Nav2 stack and other simulation necesities:
 ```
 ros2 launch robot_guidance_pkg nav2_launch.py 
 ```
-Launch April Tag Navigation:
+Launch Apriltag Navigation:
 ```
 ros2 launch robot_guidance_pkg apriltag_navigation_server.py 
 ```
+Run Apriltag Client
+```
+ros2 run robot_guidance_pkg apriltag_navigation_client
+```
 
-## Launch Depth Controller and Run Depth Controller Client
+## Launch Depth Controller and Run Depth Controller
 Launch Depth Controller:
 ```
 ros2 launch robot_guidance_pkg depth_controller_launch.py
