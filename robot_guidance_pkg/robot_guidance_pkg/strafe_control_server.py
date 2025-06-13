@@ -41,10 +41,9 @@ class StrafeControlServer(Node):
         )
 
         self.current_y = None  # z from odometry
-        self._active = False
 
     def odom_callback(self, msg):
-        self.current_y = msg.pose.pose.position.y
+        self.current_pose = msg.pose.pose
 
     def goal_callback(self, goal_request):
         self.get_logger().info('Received goal request')
@@ -57,16 +56,21 @@ class StrafeControlServer(Node):
         self.get_logger().info('Received cancel request')
         self.stop()
         return CancelResponse.ACCEPT
+    
+    def compute_distance(self, pose1, pose2):
+        dx = pose1.position.x - pose2.position.x
+        dy = pose1.position.y - pose2.position.y
+        dz = pose1.position.z - pose2.position.z
+        return math.sqrt(dx*dx + dy*dy + dz*dz)
 
     def execute_callback(self, goal_handle):
         self.get_logger().info('Executing goal...')
-        target_y = float(goal_handle.request.target_y)
+        target_pose = goal_handle.request.target_pose.pose
 
         rate = self.create_rate(10)
-        self.active = True
 
-        while rclpy.ok() and self.active:
-            if self.current_y is None:
+        while rclpy.ok():
+            if self.current_pose is None:
                 self.get_logger().warn('Waiting for valid y from odometry...')
                 
                 if goal_handle.is_cancel_requested:
@@ -83,24 +87,27 @@ class StrafeControlServer(Node):
                 self.stop()
                 goal_handle.canceled()
                 return GoToSide.Result(target_reached=False)
+            
+            distance_error = self.compute_distance(target_pose, self.current_pose)
+            self.get_logger().info(
+                f'Current Pose: {self.current_pose.position.x:.2f}, {self.current_pose.position.y:.2f}, '
+                f'Desired Pose: {target_pose.position.x:.2f}, {target_pose.position.y:.2f}, '
+                f'Distance Error: {distance_error:.2f}')
 
-            error = target_y - self.current_y
-            self.get_logger().info(f'Current Z: {self.current_y:.2f}, Target: {target_y}, Error: {error:.2f}')
-
-            if abs(error) < self.tolerance:
+            if abs(distance_error) < self.tolerance:
                 self.stop()
-                self.get_logger().info('Y Reached.')
+                self.get_logger().info('Pose Reached.')
                 goal_handle.succeed()
                 result = GoToSide.Result()
                 result.target_reached = True
                 return result
 
             feedback_msg = GoToSide.Feedback()
-            feedback_msg.current_y = self.current_y
+            feedback_msg.distance_remaining = distance_error
             goal_handle.publish_feedback(feedback_msg)
 
             cmd = Twist()
-            cmd.linear.y = max(min(self.Kp * error, self.max_velocity), -self.max_velocity)
+            cmd.linear.y = max(min(self.Kp * distance_error, self.max_velocity), -self.max_velocity)
             self.cmd_pub.publish(cmd)
             rate.sleep()
 

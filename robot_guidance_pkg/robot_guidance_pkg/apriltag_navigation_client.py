@@ -1,26 +1,33 @@
 import rclpy
 from rclpy.node import Node
+from geometry_msgs.msg import PoseStamped
 from rclpy.action import ActionClient
 from rclpy.action.client import ClientGoalHandle, GoalStatus
 from robot_guidance_interfaces.action import NavigateAprilTags
+from scipy.spatial.transform import Rotation as R
+import os
+import yaml
 
 class ApriltagNavigationClient(Node):
     def __init__(self):
         super().__init__('apriltag_navigation_client')
+
         self.apriltag_navigation_action_client = ActionClient(
             self, 
             NavigateAprilTags,
             'navigate_apriltags',
         )
 
+        self.declare_parameter('tag_map_path', '')
 
-    def send_goal(self, ids, commands):
+
+    def send_goal(self, pose_list, commands):
         self.apriltag_navigation_action_client.wait_for_server()
         goal = NavigateAprilTags.Goal()
-        goal.ids = ids
+        goal.goals = pose_list
         goal.commands = commands
         
-        self.get_logger().info('Sending goal: Ids = ' + str(ids) + ' commands = ' + str(commands))
+        self.get_logger().info('Sending goal:') #Ids = ' + str(ids) + ' commands = ' + str(commands))
         self.apriltag_navigation_action_client. \
             send_goal_async(goal, feedback_callback=self.goal_feedback_callback). \
                 add_done_callback(self.goal_response_callback)
@@ -59,16 +66,50 @@ class ApriltagNavigationClient(Node):
         self.goal_handle_.cancel_goal_async()
         
         # timer to test functionality
-       # self.timer_.cancel()
+        # self.timer_.cancel()
+
+    def load_tag_map_and_convert_to_poses(self):
+        tag_map_path = self.get_parameter('tag_map_path').get_parameter_value().string_value
+
+        if not os.path.isfile(tag_map_path):
+            self.get_logger().error(f"Tag map file not found: {tag_map_path}")
+            return []
+
+        with open(tag_map_path, 'r') as f:
+            tag_data = yaml.safe_load(f)
+
+        pose_list = []
+        for tag in tag_data['poses']:
+            pose = PoseStamped()
+            pose.header.frame_id = 'map'
+            pose.header.stamp = self.get_clock().now().to_msg()
+
+            pose.pose.position.x = tag['x']
+            pose.pose.position.y = tag['y']
+            pose.pose.position.z = tag['z']
+
+            # Convert RPY to quaternion
+            r = R.from_euler('xyz', [tag['roll'], tag['pitch'], tag['yaw']], degrees=True)
+            q = r.as_quat()
+
+            pose.pose.orientation.x = q[0]
+            pose.pose.orientation.y = q[1]
+            pose.pose.orientation.z = q[2]
+            pose.pose.orientation.w = q[3]
+
+            pose_list.append(pose)
+
+        self.get_logger().info(f"Loaded {len(pose_list)} poses from tag map.")
+        return pose_list
 
 
 
 def main(args=None):
     rclpy.init(args=args)
     client = ApriltagNavigationClient()
-    ids = [1,2,1,3,4,3,5,6,5]
-    commands = ['vertical', 'vertical', 'horizontal', 'vertical', 'vertical', 'horizontal', 'vertical', 'vertical', 'finish']
-    client.send_goal(ids, commands)
+    pose_list = client.load_tag_map_and_convert_to_poses()
+    commands = ['vertical', 'vertical', 'right', 'vertical', 'vertical', 'right', 'vertical', 'vertical', 'finish']
+    client.send_goal(pose_list, commands)
     try:
         rclpy.spin(client)
     except KeyboardInterrupt:

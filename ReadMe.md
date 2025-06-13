@@ -60,8 +60,6 @@ source install/setup.bash
 ```
 
 ## Launch Apriltag Navigation and Run Apriltag Server
-*Camera must be calibrated first
-
 Launch Nav2 stack and other simulation necesities:
 ```
 ros2 launch robot_guidance_pkg nav2_launch.py 
