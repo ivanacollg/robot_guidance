@@ -66,11 +66,11 @@ ros2 launch robot_guidance_pkg nav2_launch.py
 ```
 Launch Apriltag Navigation:
 ```
-ros2 launch robot_guidance_pkg apriltag_navigation_server.py 
+ros2 launch robot_guidance_pkg apriltag_navigation_server_launch.py 
 ```
 Run Apriltag Client
 ```
-ros2 run robot_guidance_pkg apriltag_navigation_client
+ros2 launch robot_guidance_pkg apriltag_navigation_client_launch.py
 ```
 
 ## Launch Depth Controller and Run Depth Controller
