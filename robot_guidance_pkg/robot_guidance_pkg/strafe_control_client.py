@@ -6,8 +6,6 @@ from robot_guidance_interfaces.action import GoToSide
 from geometry_msgs.msg import PoseStamped
 from scipy.spatial.transform import Rotation as R
 
-from nav2_simple_commander.robot_navigator import BasicNavigator
-
 import math
 
 
