@@ -22,7 +22,7 @@ from scipy.spatial.transform import Rotation
 
 class AprilTagNavigation(Node):
 
-    def __init__(self, navigator: BasicNavigator):
+    def __init__(self):
         super().__init__('apriltag_navigation_server')
         # Get topic nameSs
         #self.declare_parameter('tag_detections_topic', '/tag_detections')
@@ -250,10 +250,10 @@ class AprilTagNavigation(Node):
 def main(args=None):
     rclpy.init(args=args)
     # Basic Navigator for moving to a pose
-    navigator = BasicNavigator()
+    #navigator = BasicNavigator()
     # waiting for Nav2Active
-    navigator.waitUntilNav2Active()  # The BasicNavigator.waitUntilNav2Active() function explicitly checks for /amcl/get_state. If you're not using AMCL and that service doesn't exist, this call will block forever.
-    navigate = AprilTagNavigation(navigator)
+    #navigator.waitUntilNav2Active()  # The BasicNavigator.waitUntilNav2Active() function explicitly checks for /amcl/get_state. If you're not using AMCL and that service doesn't exist, this call will block forever.
+    navigate = AprilTagNavigation()
     rclpy.spin(navigate)
     rclpy.shutdown()
 
