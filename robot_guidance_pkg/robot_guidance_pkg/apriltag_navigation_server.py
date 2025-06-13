@@ -254,9 +254,15 @@ def main(args=None):
     #navigator = BasicNavigator()
     # waiting for Nav2Active
     #navigator.waitUntilNav2Active()  # The BasicNavigator.waitUntilNav2Active() function explicitly checks for /amcl/get_state. If you're not using AMCL and that service doesn't exist, this call will block forever.
-    navigate = AprilTagNavigation()
-    rclpy.spin(navigate)
-    rclpy.shutdown()
+    node = AprilTagNavigation()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':
