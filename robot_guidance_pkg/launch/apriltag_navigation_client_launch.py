@@ -48,6 +48,7 @@ def generate_launch_description():
                 parameters=[{
                     'use_sim_time': use_sim_time,
                     'tag_map_path': tag_map_file,
+                    'cleaning_routine_topic': 'cleaning_routine/poses',
                 }]
             ),
 

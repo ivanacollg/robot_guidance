@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import PoseStamped, PoseArray
 from rclpy.action import ActionClient
 from rclpy.action.client import ClientGoalHandle, GoalStatus
 from robot_guidance_interfaces.action import NavigateAprilTags
@@ -12,13 +12,17 @@ class ApriltagNavigationClient(Node):
     def __init__(self):
         super().__init__('apriltag_navigation_client')
 
+        self.declare_parameter('tag_map_path', '')
+        self.declare_parameter('cleaning_routine_topic', 'cleaning_routine/poses')
+
+        cleaning_routine_topic = self.get_parameter('cleaning_routine_topic').get_parameter_value().string_value
+        self.pose_pub = self.create_publisher(PoseArray, cleaning_routine_topic, 10)
+
         self.apriltag_navigation_action_client = ActionClient(
             self, 
             NavigateAprilTags,
             'navigate_apriltags',
         )
-
-        self.declare_parameter('tag_map_path', '')
 
 
     def send_goal(self, pose_list, commands):
@@ -103,11 +107,19 @@ class ApriltagNavigationClient(Node):
         return pose_list
 
 
+    def publish_poses(self, pose_list):
+        msg = PoseArray()
+        msg.header.frame_id = 'map'
+        pose_only_list = [p.pose for p in pose_list]
+        msg.poses = pose_only_list
+        self.pose_pub.publish(msg)
+        self.get_logger().info(f'Published PoseArray with {len(pose_list)} poses')
 
 def main(args=None):
     rclpy.init(args=args)
     client = ApriltagNavigationClient()
     pose_list = client.load_tag_map_and_convert_to_poses()
+    client.publish_poses(pose_list)
     commands = ['vertical', 'vertical', 'right', 'vertical', 'vertical', 'right', 'vertical', 'vertical', 'finish']
     client.send_goal(pose_list, commands)
     try:
