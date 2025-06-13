@@ -116,23 +116,23 @@ def generate_launch_description():
                 parameters=[{'use_sim_time': use_sim_time}]
             ),
 
-            Node(
-                package='tf2_ros',
-                executable='static_transform_publisher',
-                name='static_tf_base_camera',
-                arguments=[
-                    '--x', '0.0',
-                    '--y', '0.0',
-                    '--z', '0.0',
-                    '--roll', '-1.5708 ',
-                    '--pitch', '0.0',
-                    '--yaw', '-1.5708 ',
-                    '--frame-id', 'base_link',
-                    '--child-frame-id', 'camera_frame'
-                ],
-                output='screen',
-                parameters=[{'use_sim_time': use_sim_time}]
-            ),
+            #Node(
+            #    package='tf2_ros',
+            #    executable='static_transform_publisher',
+            #    name='static_tf_base_camera',
+            #    arguments=[
+            #        '--x', '0.0',
+            #        '--y', '0.0',
+            #        '--z', '0.0',
+            #        '--roll', '-1.5708 ',
+            #        '--pitch', '0.0',
+            #        '--yaw', '-1.5708 ',
+            #        '--frame-id', 'base_link',
+            #        '--child-frame-id', 'camera_frame'
+            #    ],
+            #    output='screen',
+            #    parameters=[{'use_sim_time': use_sim_time}]
+            #),
 
             Node(
                 package='robot_guidance_pkg',
@@ -191,16 +191,16 @@ def generate_launch_description():
             #    arguments=['--ros-args', '--log-level', 'error'],
             #),
 
-            Node(
-                package='robot_guidance_pkg',
-                executable='tag_map_publisher',
-                name='tag_map_publisher',
-                output='screen',
-                parameters=[{
-                    'use_sim_time': use_sim_time,
-                    'tag_map_path': tag_map_file,
-                }]
-            ),
+            #Node(
+            #    package='robot_guidance_pkg',
+            #    executable='tag_map_publisher',
+            #    name='tag_map_publisher',
+            #    output='screen',
+            #    parameters=[{
+            #        'use_sim_time': use_sim_time,
+            #        'tag_map_path': tag_map_file,
+            #    }]
+            #),
 
         ], condition=IfCondition(simple_simulation)),
 
