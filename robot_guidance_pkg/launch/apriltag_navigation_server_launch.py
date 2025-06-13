@@ -61,7 +61,7 @@ def generate_launch_description():
         Node(
             package='robot_guidance_pkg',
             executable='depth_control_server',
-            #name='depth_control_server',
+            name='depth_control_server',
             parameters=[
                 depth_control_param_file,
                 {
