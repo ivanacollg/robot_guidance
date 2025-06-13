@@ -60,8 +60,6 @@ source install/setup.bash
 ```
 
 ## Launch Apriltag Navigation and Run Apriltag Server
-*Camera must be calibrated first
-
 Launch Nav2 stack and other simulation necesities:
 ```
 ros2 launch robot_guidance_pkg nav2_launch.py 
@@ -83,6 +81,10 @@ ros2 launch robot_guidance_pkg depth_controller_launch.py
 Run Depth Controller Client:
 ```
 ros2 run robot_guidance_pkg depth_control_client
+```
+Send Client Goal Request Manually: 
+```
+ros2 action send_goal /go_to_depth robot_guidance_interfaces/action/GoToDepth "{target_depth: 1.5}"
 ```
 
 ## Camera Calibration

@@ -146,50 +146,50 @@ def generate_launch_description():
                 }]
             ),
 
-            Node(
-                package='v4l2_camera',
-                executable='v4l2_camera_node',
-                name='camera',
-                output='screen',
-                parameters=[{
-                    'use_sim_time': use_sim_time,
-                    'video_device': '/dev/video4',
-                    'image_size': [1920, 1080],
-                    'camera_frame_id': 'camera_frame',
-                    'pixel_format': 'YUYV',  # or 'MJPG' depending on your camera
-                    'io_method': 'mmap',
-                    'framerate': 30,
-                    'camera_info_url': ''  # Optional: Add path to your calibration .yaml file
-                }],
-                remappings=[
-                    ('/image_raw', '/image_raw'),  # Optional: match expected topic names
-                    ('/camera_info', '/camera_info')
-                ]
-            ),
+            #Node(
+            #    package='v4l2_camera',
+            #    executable='v4l2_camera_node',
+            #    name='camera',
+            #    output='screen',
+            #    parameters=[{
+            #        'use_sim_time': use_sim_time,
+            #        'video_device': '/dev/video4',
+            #        'image_size': [1920, 1080],
+            #        'camera_frame_id': 'camera_frame',
+            #        'pixel_format': 'YUYV',  # or 'MJPG' depending on your camera
+            #        'io_method': 'mmap',
+            #        'framerate': 30,
+            #        'camera_info_url': ''  # Optional: Add path to your calibration .yaml file
+            #    }],
+            #    remappings=[
+            #        ('/image_raw', '/image_raw'),  # Optional: match expected topic names
+            #        ('/camera_info', '/camera_info')
+            #    ]
+            #),
 
             # April Tag Detection
-            Node(
-                package='apriltag_ros',
-                executable='apriltag_node',
-                name='apriltag_node',
-                output='screen',
-                parameters=[{
-                    'use_sim_time': use_sim_time,
-                    'publish_tag_detections': True,
-                    'publish_tag_detections_image': True,
-                    'publish_tf': True,
-                    'camera_frame': 'camera_link',  
-                    'tag_family': 'tag36h11',
-                    'tag_size': 0.17,  # Tag size in meters
-                    'approximate_sync': True,  
-                }],
-                remappings=[
-                    ('image_rect', '/image_raw'),          # Adjust to your image topic
-                    ('camera_info', '/camera_info'),       # Adjust to your camera_info
-                    ('detections', '/tag_detections'),        # Output topic
-                ],
-                arguments=['--ros-args', '--log-level', 'error'],
-            ),
+            #Node(
+            #    package='apriltag_ros',
+            #    executable='apriltag_node',
+            #    name='apriltag_node',
+            #    output='screen',
+            #    parameters=[{
+            #        'use_sim_time': use_sim_time,
+            #        'publish_tag_detections': True,
+            #        'publish_tag_detections_image': True,
+            #        'publish_tf': True,
+            #        'camera_frame': 'camera_link',  
+            #        'tag_family': 'tag36h11',
+            #        'tag_size': 0.17,  # Tag size in meters
+            #        'approximate_sync': True,  
+            #    }],
+            #    remappings=[
+            #        ('image_rect', '/image_raw'),          # Adjust to your image topic
+            #        ('camera_info', '/camera_info'),       # Adjust to your camera_info
+            #        ('detections', '/tag_detections'),        # Output topic
+            #    ],
+            #    arguments=['--ros-args', '--log-level', 'error'],
+            #),
 
             Node(
                 package='robot_guidance_pkg',

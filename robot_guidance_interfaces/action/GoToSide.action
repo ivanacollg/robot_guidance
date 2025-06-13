@@ -1,8 +1,8 @@
 # Goal
-float64 target_y
+geometry_msgs/PoseStamped target_pose
 ---
 # Result
 bool target_reached
 ---
 # Feedback
-float64 current_y
+float64 distance_remaining

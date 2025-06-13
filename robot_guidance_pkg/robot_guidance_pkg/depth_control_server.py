@@ -51,6 +51,11 @@ class DepthControlServer(Node):
 
     def goal_callback(self, goal_request):
         self.get_logger().info('Received goal request')
+
+        if goal_request.target_depth > 0:
+            self.get_logger().warn('Goal request is greater than 0')
+            self.get_logger().warn('Rejecting goal')
+            return GoalResponse.REJECT
         return GoalResponse.ACCEPT
 
     def cancel_callback(self, goal_handle): # client calls a cancel request, goal_handle is a ServerGoalHandle
