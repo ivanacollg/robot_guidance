@@ -138,12 +138,12 @@ class AprilTagNavigation(Node):
                     self.navigator.cancelTask()
                     self.get_logger().warn(f'Goal timeout without being reached {tag_id}')
                     goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_complete=False) # What is this?
+                    return NavigateAprilTags.Result(navigation_completed=False) # What is this?
                 
             if self.navigator.getResult() != TaskResult.SUCCEEDED:
                 self.get_logger().warn(f"Failed to reach a goal.")
                 goal_handle.abort()
-                return NavigateAprilTags.Result(navigation_complete=False)
+                return NavigateAprilTags.Result(navigation_completed=False)
 
             # Execute command depending on Tag Pattern
             self.get_logger().info(f'Reached pose number {i}, executing command...')
@@ -163,7 +163,7 @@ class AprilTagNavigation(Node):
                 if not self.depth_control_client.wait_for_server(timeout_sec=5.0):
                     self.get_logger().error("GoToDepth action server not available after 5 seconds!")
                     goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_complete=False)
+                    return NavigateAprilTags.Result(navigation_completed=False)
                 # Send the goal
                 self.get_logger().info(f"Sending GoToDepth goal to {desired_depth:.2f} meters")
                 
@@ -173,14 +173,14 @@ class AprilTagNavigation(Node):
                 if not depth_goal_handle.accepted:
                     self.get_logger().warn("Depth goal rejected")
                     goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_complete = False)
+                    return NavigateAprilTags.Result(navigation_completed = False)
             
                 result_response = await depth_goal_handle.get_result_async()
                 
                 if not result_response.result.reached_final_depth:
                     self.get_logger().warn("Depth goal failed")
                     goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_complete = False)
+                    return NavigateAprilTags.Result(navigation_completed = False)
                 
                 self.get_logger().info("Depth goal succeeded")
             
@@ -207,12 +207,12 @@ class AprilTagNavigation(Node):
                         self.navigator.cancelTask()
                         self.get_logger().warn(f'Strafing heading goal timeout without being reached')
                         goal_handle.abort()
-                        return NavigateAprilTags.Result(navigation_complete = False)
+                        return NavigateAprilTags.Result(navigation_completed = False)
                     
                 if self.navigator.getResult() != TaskResult.SUCCEEDED:
                     self.get_logger().warn(f"Failed to reach desired heading.")
                     goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_complete = False)
+                    return NavigateAprilTags.Result(navigation_completed = False)
                 
                 strafe_goal = GoToSide.Goal()
                 strafe_goal.target_pose = next_goal
@@ -222,7 +222,7 @@ class AprilTagNavigation(Node):
                 if not self.strafe_control_client.wait_for_server(timeout_sec=5.0):
                     self.get_logger().error("GoToSide action server not available after 5 seconds!")
                     goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_complete=False)
+                    return NavigateAprilTags.Result(navigation_completed=False)
                 # Send the goal
                 self.get_logger().info(f"Sending GoToSide goal")
                 
@@ -232,19 +232,20 @@ class AprilTagNavigation(Node):
                 if not strafe_goal_handle.accepted:
                     self.get_logger().warn("Strafe goal rejected")
                     goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_complete = False)
+                    return NavigateAprilTags.Result(navigation_completed = False)
             
                 result_response = await strafe_goal_handle.get_result_async()
                 
                 if not result_response.result.target_reached:
                     self.get_logger().warn("Strafe goal failed")
                     goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_complete = False)
+                    return NavigateAprilTags.Result(navigation_completed = False)
                 
                 self.get_logger().info("Strafe goal succeeded")
                             
+        self.get_logger().info("Navigation succeeded")
         goal_handle.succeed()
-        return NavigateAprilTags.Result(navigation_complete = True)
+        return NavigateAprilTags.Result(navigation_completed = True)
 
 
 def main(args=None):
