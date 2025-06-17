@@ -25,30 +25,54 @@ map_server:
 controller_server:
   ros__parameters:
     use_sim_time: false
-    #FollowPath:
-    #  plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
-    #  desired_linear_vel: 0.5
-    #  max_angular_vel: 1.0
-    #  min_lookahead_dist: 0.3
-    #  lookahead_time: 1.5
-    #  rotate_to_heading_angular_vel: 0.6
     controller_plugins: ["FollowPath"]
-    FollowPath:
-      plugin: "dwb_core::DWBLocalPlanner"
-      debug_trajectory_details: true
-      min_vel_x: 0.0
-      min_vel_y: 0.0
-      max_vel_x: 0.3
-      max_vel_y: 0.3
-      max_vel_theta: 0.3
-      min_speed_xy: 0.0
-      max_speed_xy: 0.3
-      min_speed_theta: 0.0
-      acc_lim_x: 2.5
-      acc_lim_theta: 3.2
-      decel_lim_x: -2.5
-      decel_lim_theta: -3.2
+    
+    ###### DWB PLANNER #######################
+    # FollowPath:
+    #   plugin: "dwb_core::DWBLocalPlanner"
+    #   debug_trajectory_details: true
+    #   min_vel_x: 0.0
+    #   min_vel_y: 0.0
+    #   max_vel_x: 0.3
+    #   max_vel_y: 0.3
+    #   max_vel_theta: 0.3
+    #   min_speed_xy: 0.0
+    #   max_speed_xy: 0.3
+    #   min_speed_theta: 0.0
+    #   acc_lim_x: 2.5
+    #   acc_lim_theta: 3.2
+    #   decel_lim_x: -2.5
+    #   decel_lim_theta: -3.2
 
+    ###### REGULATED PURE PURSUIT ############
+    FollowPath:
+      plugin: "nav2_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+      desired_linear_vel: 0.5
+      max_angular_vel: 1.0
+      min_lookahead_dist: 0.3
+      lookahead_time: 1.5
+      rotate_to_heading_angular_vel: 0.6
+
+    ###### GRACEFUL ##########################
+    # FollowPath:
+    #   plugin: "nav2_graceful_controller::GracefulController"
+    #   desired_linear_vel: 0.5
+    #   min_approach_linear_velocity: 0.25
+    #   linear_vel_tol: 0.2
+    #   angular_vel_tol: 0.
+    #   transform_tolerance: 0.2
+    #   max_angular_accel: 0.2
+      
+    #   max_lookahead_dist: 1.5
+    #   min_lookahead_dist: 0.3
+    #   lookahead_time: 2.0
+
+    #   goal_dist_tol: 0.1
+    #   use_approach_linear_velocity_scaling: false
+    #   use_velocity_scaled_lookahead_dist: false
+
+
+    #########################################
       critics: [
         "RotateToGoal",
         "ObstacleFootprint",
@@ -68,8 +92,21 @@ controller_server:
     goal_checker_plugins: ["simple_goal_checker"]
     simple_goal_checker:
       plugin: "nav2_controller::SimpleGoalChecker"
-      xy_goal_tolerance: 0.25
-      yaw_goal_tolerance: 0.25
+
+      ###### DWB PLANNER ####################
+      # within 25 cm of first goal (less breaks planner)
+      # xy_goal_tolerance: 0.25
+
+      ###### REGULATED PURE PURSUIT #########
+      # within 1 cm of first goal
+      xy_goal_tolerance: 0.01
+
+      ###### GRACEFUl #######################
+      # xy_goal_tolerance: 0.075
+      
+      #######################################
+
+      yaw_goal_tolerance: 0.05
       stateful: false
 
     # Progress checker plugin setup
@@ -87,7 +124,7 @@ planner_server:
     planner_plugins: ["GridBased"]
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
-      tolerance: 0.5
+      tolerance: 0.25
 
 bt_navigator:
   ros__parameters:
