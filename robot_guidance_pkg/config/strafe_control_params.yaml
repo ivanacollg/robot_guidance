@@ -1,5 +1,5 @@
 strafe_control_server:
   ros__parameters:
-    tolerance: 0.30
+    tolerance: 0.05
     Kp: 0.4
     max_velocity: 0.25
