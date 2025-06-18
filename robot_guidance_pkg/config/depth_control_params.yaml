@@ -3,3 +3,4 @@ depth_control_server:
     tolerance: 0.05
     Kp: 0.4
     max_velocity: 0.25
+    timeout: 10.0

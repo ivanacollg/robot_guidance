@@ -8,6 +8,8 @@ from robot_guidance_interfaces.action import GoToSide
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 
+from rclpy.clock import Clock
+
 import math
 
 class StrafeControlServer(Node):
@@ -18,9 +20,11 @@ class StrafeControlServer(Node):
         self.declare_parameter('tolerance', 0.05)
         self.declare_parameter('Kp', 0.5)
         self.declare_parameter('max_velocity', 0.25)
+        self.declare_parameter('timeout', 15.0)
         self.tolerance = self.get_parameter('tolerance').get_parameter_value().double_value
         self.Kp = self.get_parameter('Kp').get_parameter_value().double_value
         self.max_velocity = self.get_parameter('max_velocity').get_parameter_value().double_value
+        self.timeout = self.get_parameter('timeout').get_parameter_value().double_value
         # Declare topics with defaults
         self.declare_parameter('cmd_vel_topic', '/cmd_vel')
         self.declare_parameter('odom_topic', '/odom')
@@ -69,7 +73,20 @@ class StrafeControlServer(Node):
 
         rate = self.create_rate(10)
 
+        start_time = Clock().now()
+
         while rclpy.ok():
+            current_time = Clock().now()
+            start_secs = start_time.nanoseconds / 1e9
+            current_secs = current_time.nanoseconds / 1e9
+            elapsed = current_secs - start_secs
+
+            if elapsed > self.timeout:
+                self.get_logger().warn("Server Request Timed Out")
+                self.stop()
+                goal_handle.abort()
+                return GoToSide.Result(target_reached=False)
+            
             if self.current_pose is None:
                 self.get_logger().warn('Waiting for valid y from odometry...')
                 

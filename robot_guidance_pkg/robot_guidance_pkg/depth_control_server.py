@@ -8,6 +8,8 @@ from robot_guidance_interfaces.action import GoToDepth
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 
+from rclpy.clock import Clock
+
 import math
 
 # ros2 action send_goal /go_to_depth robot_guidance_interfaces/action/GoToDepth "{target_depth: 1.5}"  - sending a goal
@@ -21,9 +23,11 @@ class DepthControlServer(Node):
         self.declare_parameter('tolerance', 0.05)
         self.declare_parameter('Kp', 0.5)
         self.declare_parameter('max_velocity', 0.25)
+        self.declare_parameter('timeout', 10.0)
         self.tolerance = self.get_parameter('tolerance').get_parameter_value().double_value
         self.Kp = self.get_parameter('Kp').get_parameter_value().double_value
         self.max_velocity = self.get_parameter('max_velocity').get_parameter_value().double_value
+        self.timeout = self.get_parameter('timeout').get_parameter_value().double_value
         # Declare topics with defaults
         self.declare_parameter('cmd_vel_topic', '/cmd_vel')
         self.declare_parameter('odom_topic', '/odom')
@@ -69,8 +73,21 @@ class DepthControlServer(Node):
 
         rate = self.create_rate(10)
         self.active = True
+        
+        start_time = Clock().now()
 
         while rclpy.ok() and self.active:
+            current_time = Clock().now()
+            start_secs = start_time.nanoseconds / 1e9
+            current_secs = current_time.nanoseconds / 1e9
+            elapsed = current_secs - start_secs
+
+            if elapsed > self.timeout:
+                self.get_logger().warn("Server Request Timed Out")
+                self.stop()
+                goal_handle.abort()
+                return GoToDepth.Result(reached_final_depth=False)
+
             if self.current_depth is None:
                 self.get_logger().warn('Waiting for valid depth from odometry...')
                 
