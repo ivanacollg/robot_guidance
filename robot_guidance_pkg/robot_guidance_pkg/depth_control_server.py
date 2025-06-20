@@ -48,7 +48,7 @@ class DepthControlServer(Node):
             goal_callback=self.goal_callback,   
             cancel_callback=self.cancel_callback,
             execute_callback=self.execute_callback,
-            callback_group=ReentrantCallbackGroup() # threading allows for cancelling requests
+            #callback_group=ReentrantCallbackGroup() # threading allows for cancelling requests
         )
 
         self.current_depth = None  # z from odometry
@@ -102,7 +102,8 @@ class DepthControlServer(Node):
                     goal_handle.canceled() # Goal State = canceled
                     return GoToDepth.Result(reached_final_depth=False)
                 
-                rate.sleep()
+                rclpy.spin_once(self, timeout_sec=0.01)
+                #rate.sleep()
                 continue
 
             if goal_handle.is_cancel_requested:
@@ -144,7 +145,8 @@ class DepthControlServer(Node):
             cmd = Twist()
             cmd.linear.z = max(min(self.Kp * error, self.max_velocity), -self.max_velocity)
             self.cmd_pub.publish(cmd)
-            rate.sleep()
+            rclpy.spin_once(self, timeout_sec=0.1)
+            #rate.sleep()
 
         self.stop()
         goal_handle.abort()
@@ -159,7 +161,9 @@ def main(args=None):
     rclpy.init(args=args)
     server = DepthControlServer()
     try:
-        rclpy.spin(server, MultiThreadedExecutor())
+        while rclpy.ok():
+            rclpy.spin_once(server, timeout_sec=0.1)
+        #rclpy.spin(server, MultiThreadedExecutor())
     except KeyboardInterrupt:
         pass
     finally:
