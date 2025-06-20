@@ -45,12 +45,13 @@ class StrafeControlServer(Node):
             goal_callback=self.goal_callback,   
             cancel_callback=self.cancel_callback,
             execute_callback=self.execute_callback,
-            callback_group=ReentrantCallbackGroup()
+            #callback_group=ReentrantCallbackGroup()
         )
 
         self.current_y = None  # z from odometry
 
     def odom_callback(self, msg):
+        # self.get_logger().info('Getting Odometry...')
         self.current_pose = msg.pose.pose
 
     def goal_callback(self, goal_request):
@@ -146,7 +147,8 @@ class StrafeControlServer(Node):
             cmd = Twist()
             cmd.linear.y = max(min(self.Kp * distance_error, self.max_velocity), -self.max_velocity)
             self.cmd_pub.publish(cmd)
-            rate.sleep()
+            rclpy.spin_once(self, timeout_sec=0.1)
+            # rate.sleep()
 
         self.stop()
         goal_handle.abort()
@@ -161,7 +163,9 @@ def main(args=None):
     rclpy.init(args=args)
     server = StrafeControlServer()
     try:
-        rclpy.spin(server, MultiThreadedExecutor())
+        while rclpy.ok():
+            rclpy.spin_once(server, timeout_sec=0.1)
+        # rclpy.spin(server, MultiThreadedExecutor())
     except KeyboardInterrupt:
         pass
     finally:
