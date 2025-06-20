@@ -8,6 +8,10 @@ from robot_guidance_interfaces.action import GoToSide
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 
+from rclpy.clock import Clock
+
+import numpy as np
+
 import math
 
 class StrafeControlServer(Node):
@@ -18,9 +22,13 @@ class StrafeControlServer(Node):
         self.declare_parameter('tolerance', 0.05)
         self.declare_parameter('Kp', 0.5)
         self.declare_parameter('max_velocity', 0.25)
+        self.declare_parameter('timeout', 15.0)
+        self.declare_parameter('error_buffer', 0.02)
         self.tolerance = self.get_parameter('tolerance').get_parameter_value().double_value
         self.Kp = self.get_parameter('Kp').get_parameter_value().double_value
         self.max_velocity = self.get_parameter('max_velocity').get_parameter_value().double_value
+        self.timeout = self.get_parameter('timeout').get_parameter_value().double_value
+        self.error_buffer = self.get_parameter('error_buffer').get_parameter_value().double_value
         # Declare topics with defaults
         self.declare_parameter('cmd_vel_topic', '/cmd_vel')
         self.declare_parameter('odom_topic', '/odom')
@@ -65,11 +73,24 @@ class StrafeControlServer(Node):
 
     def execute_callback(self, goal_handle):
         self.get_logger().info('Executing goal...')
+        # initialize variables
         target_pose = goal_handle.request.target_pose.pose
-
         rate = self.create_rate(10)
+        min_distance_error = np.inf
+        start_time = Clock().now()
 
         while rclpy.ok():
+            current_time = Clock().now()
+            start_secs = start_time.nanoseconds / 1e9
+            current_secs = current_time.nanoseconds / 1e9
+            elapsed = current_secs - start_secs
+
+            if elapsed > self.timeout:
+                self.get_logger().warn("Server Request Timed Out")
+                self.stop()
+                goal_handle.abort()
+                return GoToSide.Result(target_reached=False)
+            
             if self.current_pose is None:
                 self.get_logger().warn('Waiting for valid y from odometry...')
                 
@@ -92,7 +113,8 @@ class StrafeControlServer(Node):
             self.get_logger().info(
                 f'Current Pose: {self.current_pose.position.x:.2f}, {self.current_pose.position.y:.2f}, '
                 f'Desired Pose: {target_pose.position.x:.2f}, {target_pose.position.y:.2f}, '
-                f'Distance Error: {distance_error:.2f}')
+                f'Distance Error: {distance_error:.2f}, '
+                f'Min Distance Error: {min_distance_error:.4f}')
 
             if abs(distance_error) < self.tolerance:
                 self.stop()
@@ -101,6 +123,21 @@ class StrafeControlServer(Node):
                 result = GoToSide.Result()
                 result.target_reached = True
                 return result
+
+            # robot has passed by closest point to goal on current path
+            if (distance_error > min_distance_error + self.error_buffer):
+                self.get_logger().warn('Goal Missed')
+                self.stop()
+                self.get_logger().info(f'Current Distance Error: {distance_error:.3f} '
+                                       f'Minimum Distance Error: {min_distance_error:.3f}')
+                goal_handle.succeed()
+                result = GoToSide.Result()
+                result.target_reached = True
+                return result
+            # robot getting closer to goal on current path
+            elif (distance_error < min_distance_error):
+                min_distance_error = distance_error
+            # else robot is getting farther away from goal but still within error buffer
 
             feedback_msg = GoToSide.Feedback()
             feedback_msg.distance_remaining = distance_error

@@ -8,6 +8,10 @@ from robot_guidance_interfaces.action import GoToDepth
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
 
+from rclpy.clock import Clock
+
+import numpy as np
+
 import math
 
 # ros2 action send_goal /go_to_depth robot_guidance_interfaces/action/GoToDepth "{target_depth: 1.5}"  - sending a goal
@@ -21,9 +25,13 @@ class DepthControlServer(Node):
         self.declare_parameter('tolerance', 0.05)
         self.declare_parameter('Kp', 0.5)
         self.declare_parameter('max_velocity', 0.25)
+        self.declare_parameter('timeout', 10.0)
+        self.declare_parameter('error_buffer', 0.02)
         self.tolerance = self.get_parameter('tolerance').get_parameter_value().double_value
         self.Kp = self.get_parameter('Kp').get_parameter_value().double_value
         self.max_velocity = self.get_parameter('max_velocity').get_parameter_value().double_value
+        self.timeout = self.get_parameter('timeout').get_parameter_value().double_value
+        self.error_buffer = self.get_parameter('error_buffer').get_parameter_value().double_value
         # Declare topics with defaults
         self.declare_parameter('cmd_vel_topic', '/cmd_vel')
         self.declare_parameter('odom_topic', '/odom')
@@ -65,12 +73,25 @@ class DepthControlServer(Node):
 
     def execute_callback(self, goal_handle): # automatically called from goal_callback func when goal is accepted, goal_handle is a ServerGoalHandle
         self.get_logger().info('Executing goal...')
+        # initialize variables
         target_depth = float(goal_handle.request.target_depth) # get our action goal
-
         rate = self.create_rate(10)
         self.active = True
+        min_error = np.inf
+        start_time = Clock().now()
 
         while rclpy.ok() and self.active:
+            current_time = Clock().now()
+            start_secs = start_time.nanoseconds / 1e9
+            current_secs = current_time.nanoseconds / 1e9
+            elapsed = current_secs - start_secs
+
+            if elapsed > self.timeout:
+                self.get_logger().warn("Server Request Timed Out")
+                self.stop()
+                goal_handle.abort()
+                return GoToDepth.Result(reached_final_depth=False)
+
             if self.current_depth is None:
                 self.get_logger().warn('Waiting for valid depth from odometry...')
                 
@@ -99,6 +120,21 @@ class DepthControlServer(Node):
                 result = GoToDepth.Result()
                 result.reached_final_depth = True
                 return result
+
+            # robot depth no longer approaching goal 
+            if ((abs(error)) > min_error + self.error_buffer):
+                 self.get_logger().warn('Goal Missed')
+                 self.stop()
+                 self.get_logger().info(f'Current Distance Error: {abs(error):.3f} '
+                                        f'Minimum Distance Error: {min_error:.3f}')
+                 goal_handle.succeed()
+                 result = GoToDepth.Result()
+                 result.reached_final_depth = True
+                 return result
+            # robot depth getting closer to target depth
+            elif (abs(error) < min_error):
+                min_error = abs(error)
+            # else robot depth no longer approaching goal but within buffer
 
             feedback_msg = GoToDepth.Feedback()
             feedback_msg.current_depth = self.current_depth
