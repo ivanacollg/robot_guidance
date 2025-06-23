@@ -69,8 +69,8 @@ class StrafeControlServer(Node):
     def compute_distance(self, pose1, pose2):
         dx = pose1.position.x - pose2.position.x
         dy = pose1.position.y - pose2.position.y
-        dz = pose1.position.z - pose2.position.z
-        return math.sqrt(dx*dx + dy*dy + dz*dz)
+        #dz = pose1.position.z - pose2.position.z
+        return math.sqrt(dx*dx + dy*dy) #+ dz*dz)
 
     def execute_callback(self, goal_handle):
         self.get_logger().info('Executing goal...')

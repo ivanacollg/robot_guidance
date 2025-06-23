@@ -29,6 +29,8 @@ class AprilTagNavigation(Node):
         self.declare_parameter('odom_topic', '/odom')
         #tag_topic = self.get_parameter('tag_detections_topic').get_parameter_value().string_value
         odom_topic = self.get_parameter('odom_topic').get_parameter_value().string_value
+
+        self.goal_tolerance = 0.05
         # Subscribers 
         #self.tag_sub = self.create_subscription(
         #    AprilTagDetectionArray,
@@ -91,23 +93,29 @@ class AprilTagNavigation(Node):
         if stafe_direction == "left":
             strafe_left = True
         
-        dx = goal_pose.pose.position.x - start_pose.position.x
-        dy = goal_pose.pose.position.y - start_pose.position.y
+        dx = goal_pose.position.x - start_pose.position.x
+        dy = goal_pose.position.y - start_pose.position.y
 
         # Direction from start to goal
         theta = math.atan2(dy, dx)
 
         # Rotate to face perpendicular
         if strafe_left:
-            yaw = theta - math.pi / 2 
+            yaw = theta + math.pi / 2 
         else: # strafe right
-            yaw = theta + math.pi / 2
+            yaw = theta - math.pi / 2
 
         quat = Rotation.from_euler('z', yaw).as_quat()  # [x, y, z, w]
 
         q = Quaternion()
         q.x, q.y, q.z, q.w = quat
         return q
+    
+    def compute_distance(self, pose1, pose2):
+        dx = pose1.position.x - pose2.position.x
+        dy = pose1.position.y - pose2.position.y
+        #dz = pose1.position.z - pose2.position.z
+        return math.sqrt(dx*dx + dy*dy) #+ dz*dz)
 
     async def execute_callback(self, goal_handle):
         goal = goal_handle.request
@@ -188,62 +196,68 @@ class AprilTagNavigation(Node):
             
             elif command == 'right' or command == 'left':
                 self.get_logger().info(f'Horizontal Command')
+                distance = np.inf
+                
+                while distance > self.goal_tolerance:
+                    distance = self.compute_distance(self.current_pose, next_goal.pose)
+                    self.get_logger().info(f"Distance {distance:.2f} meters")
 
-                q = self.get_strafe_heading(self.current_pose, next_goal, "left")
+                    self.get_logger().info(f'Spin in place to stafing angle')
+                    q = self.get_strafe_heading(self.current_pose, next_goal.pose, command)
 
-                # Build navigation goal from transform
-                pose = PoseStamped()
-                pose.header.frame_id = 'map'
-                pose.header.stamp = self.get_clock().now().to_msg()
-                pose.pose.position.x = self.current_pose.position.x
-                pose.pose.position.y = self.current_pose.position.y
-                pose.pose.orientation = q
-                self.navigator.goToPose(pose)
+                    # Build navigation goal from transform
+                    pose = PoseStamped()
+                    pose.header.frame_id = 'map'
+                    pose.header.stamp = self.get_clock().now().to_msg()
+                    pose.pose.position.x = self.current_pose.position.x
+                    pose.pose.position.y = self.current_pose.position.y
+                    pose.pose.orientation = q
+                    self.navigator.goToPose(pose)
 
-                start_time = self.get_clock().now()
-                # 4. Spin while tag is not yet detected and goal not reached
-                while rclpy.ok() and not self.navigator.isTaskComplete():
-                    elapsed_time = (self.get_clock().now() - start_time).nanoseconds / 1e9  # seconds
-                    if elapsed_time > 600:
-                    # If task taking too long or april tag detected
-                        self.navigator.cancelTask()
-                        self.get_logger().warn(f'Strafing heading goal timeout without being reached')
+                    start_time = self.get_clock().now()
+                    # 4. Spin while tag is not yet detected and goal not reached
+                    while rclpy.ok() and not self.navigator.isTaskComplete():
+                        elapsed_time = (self.get_clock().now() - start_time).nanoseconds / 1e9  # seconds
+                        if elapsed_time > 600:
+                        # If task taking too long or april tag detected
+                            self.navigator.cancelTask()
+                            self.get_logger().warn(f'Strafing heading goal timeout without being reached')
+                            goal_handle.abort()
+                            return NavigateAprilTags.Result(navigation_completed = False)
+                        
+                    if self.navigator.getResult() != TaskResult.SUCCEEDED:
+                        self.get_logger().warn(f"Failed to reach desired heading.")
                         goal_handle.abort()
                         return NavigateAprilTags.Result(navigation_completed = False)
                     
-                if self.navigator.getResult() != TaskResult.SUCCEEDED:
-                    self.get_logger().warn(f"Failed to reach desired heading.")
-                    goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_completed = False)
-                
-                strafe_goal = GoToSide.Goal()
-                strafe_goal.target_pose = next_goal
+                    strafe_goal = GoToSide.Goal()
+                    strafe_goal.target_pose = next_goal
 
-                self.get_logger().info(f'Waiting for strafe control server to start')
-                # Wait for server to be ready
-                if not self.strafe_control_client.wait_for_server(timeout_sec=5.0):
-                    self.get_logger().error("GoToSide action server not available after 5 seconds!")
-                    goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_completed=False)
-                # Send the goal
-                self.get_logger().info(f"Sending GoToSide goal")
-                
-                send_goal_future = self.strafe_control_client.send_goal_async(strafe_goal)
-                strafe_goal_handle = await send_goal_future
+                    self.get_logger().info(f'Waiting for strafe control server to start')
+                    # Wait for server to be ready
+                    if not self.strafe_control_client.wait_for_server(timeout_sec=5.0):
+                        self.get_logger().error("GoToSide action server not available after 5 seconds!")
+                        goal_handle.abort()
+                        return NavigateAprilTags.Result(navigation_completed=False)
+                    # Send the goal
+                    self.get_logger().info(f"Sending GoToSide goal")
+                    
+                    send_goal_future = self.strafe_control_client.send_goal_async(strafe_goal)
+                    strafe_goal_handle = await send_goal_future
 
-                if not strafe_goal_handle.accepted:
-                    self.get_logger().warn("Strafe goal rejected")
-                    goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_completed = False)
-            
-                result_response = await strafe_goal_handle.get_result_async()
+                    if not strafe_goal_handle.accepted:
+                        self.get_logger().warn("Strafe goal rejected")
+                        goal_handle.abort()
+                        return NavigateAprilTags.Result(navigation_completed = False)
                 
-                if not result_response.result.target_reached:
-                    self.get_logger().warn("Strafe goal failed")
-                    goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_completed = False)
-                
-                self.get_logger().info("Strafe goal succeeded")
+                    result_response = await strafe_goal_handle.get_result_async()
+                    
+                    if not result_response.result.target_reached:
+                        self.get_logger().warn("Strafe goal failed")
+                        goal_handle.abort()
+                        return NavigateAprilTags.Result(navigation_completed = False)
+                    
+                    self.get_logger().info("Strafe goal succeeded")
                             
         self.get_logger().info("Navigation succeeded")
         goal_handle.succeed()
