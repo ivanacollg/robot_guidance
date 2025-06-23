@@ -70,7 +70,7 @@ class AprilTagNavigation(Node):
         #self.goal_offset = 0.5
     
     def odom_callback(self, msg: Odometry):
-        # self.get_logger().info('Getting Odometry...')
+        #self.get_logger().info('Getting Odometry...')
         self.current_pose = msg.pose.pose
 
     #def tag_callback(self, msg: AprilTagDetectionArray):

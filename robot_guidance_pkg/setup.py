@@ -44,6 +44,7 @@ setup(
             'tag_map_publisher = robot_guidance_pkg.tag_map_publisher:main',
             'strafe_control_server = robot_guidance_pkg.strafe_control_server:main',
             'strafe_control_client = robot_guidance_pkg.strafe_control_client:main',
+            'main_navigation = robot_guidance_pkg.main_navigation:main',
         ],
     },
 )

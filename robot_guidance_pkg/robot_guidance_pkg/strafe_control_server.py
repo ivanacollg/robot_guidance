@@ -51,7 +51,7 @@ class StrafeControlServer(Node):
         self.current_y = None  # z from odometry
 
     def odom_callback(self, msg):
-        # self.get_logger().info('Getting Odometry...')
+        #self.get_logger().info('Getting Odometry...')
         self.current_pose = msg.pose.pose
 
     def goal_callback(self, goal_request):
