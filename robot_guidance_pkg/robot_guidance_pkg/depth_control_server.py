@@ -55,7 +55,7 @@ class DepthControlServer(Node):
         self._active = False
 
     def odom_callback(self, msg):
-        # self.get_logger().info('Getting Odometry...')
+        #self.get_logger().info('Getting Odometry...')
         self.current_depth = msg.pose.pose.position.z
 
     def goal_callback(self, goal_request):
