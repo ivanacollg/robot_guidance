@@ -194,7 +194,7 @@ class AprilTagNavigation(Node):
                 
                 self.get_logger().info("Depth goal succeeded")
             
-            elif command == 'right' or command == 'left':
+            elif command == 'horizontal':
                 self.get_logger().info(f'Horizontal Command')
                 distance = np.inf
                 
@@ -203,7 +203,7 @@ class AprilTagNavigation(Node):
                     self.get_logger().info(f"Distance {distance:.2f} meters")
 
                     self.get_logger().info(f'Spin in place to stafing angle')
-                    q = self.get_strafe_heading(self.current_pose, next_goal.pose, command)
+                    q = self.get_strafe_heading(self.current_pose, next_goal.pose, 'right')
 
                     # Build navigation goal from transform
                     pose = PoseStamped()
