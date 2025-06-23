@@ -83,6 +83,7 @@ class ApriltagNavigationClient(Node):
             tag_data = yaml.safe_load(f)
 
         pose_list = []
+        command_list = []
         for tag in tag_data['poses']:
             pose = PoseStamped()
             pose.header.frame_id = 'map'
@@ -103,8 +104,11 @@ class ApriltagNavigationClient(Node):
 
             pose_list.append(pose)
 
+            command = tag['command']
+            command_list.append(command)
+
         self.get_logger().info(f"Loaded {len(pose_list)} poses from tag map.")
-        return pose_list
+        return pose_list, command_list
 
 
     def publish_poses(self, pose_list):
@@ -118,10 +122,9 @@ class ApriltagNavigationClient(Node):
 def main(args=None):
     rclpy.init(args=args)
     client = ApriltagNavigationClient()
-    pose_list = client.load_tag_map_and_convert_to_poses()
+    pose_list, command_list = client.load_tag_map_and_convert_to_poses()
     client.publish_poses(pose_list)
-    commands = ['vertical', 'vertical', 'horizontal', 'vertical', 'vertical', 'horizontal', 'vertical', 'vertical', 'finish']
-    client.send_goal(pose_list, commands)
+    client.send_goal(pose_list, command_list)
     try:
         rclpy.spin(client)
     except KeyboardInterrupt:

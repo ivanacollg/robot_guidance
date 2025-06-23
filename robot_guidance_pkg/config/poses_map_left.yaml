@@ -9,6 +9,7 @@
 poses:
  -
    id: 0
+   command: 'vertical' 
    x: 1.37
    y: 0.0
    z: 0.0
@@ -17,6 +18,7 @@ poses:
    yaw: 20.0
  -
    id: 1
+   command: 'vertical' 
    x: 1.37
    y: 0.0
    z: -0.5
@@ -25,6 +27,7 @@ poses:
    yaw: 20.0
  -
    id: 0
+   command: 'right' 
    x: 1.37
    y: 0.0
    z: 0.0
@@ -33,6 +36,7 @@ poses:
    yaw: 20.0
  -
    id: 2
+   command: 'vertical' 
    x: 1.026
    y: 0.940
    z: 0.0
@@ -41,6 +45,7 @@ poses:
    yaw: 20.0
  -
    id: 3
+   command: 'vertical' 
    x: 1.026
    y: 0.940
    z: -0.5
@@ -49,6 +54,7 @@ poses:
    yaw: 20.0
  -
    id: 2
+   command: 'right' 
    x: 1.026
    y: 0.940
    z: 0.0
@@ -57,6 +63,7 @@ poses:
    yaw: 20.0
  -
    id: 4
+   command: 'vertical' 
    x: 0.684
    y: 1.88
    z: 0.0
@@ -65,6 +72,7 @@ poses:
    yaw: 20.0
  -
    id: 5
+   command: 'vertical' 
    x: 0.684
    y: 1.88
    z: -0.5
@@ -73,6 +81,7 @@ poses:
    yaw: 20.0
  -
    id: 4
+   command: 'right' 
    x: 0.684
    y: 1.88
    z: 0.0
@@ -84,6 +93,7 @@ poses:
 # MID POINT Fence 1
  -
    id: 6
+   command: 'vertical' 
    x: 0.513
    y: 2.38
    z: 0.0
@@ -92,6 +102,7 @@ poses:
    yaw: 0.0
  -
    id: 7
+   command: 'vertical' 
    x: 0.513
    y: 2.38
    z: -0.5
@@ -100,6 +111,7 @@ poses:
    yaw: 0.0
  -
    id: 6
+   command: 'right' 
    x: 0.513
    y: 2.38
    z: 0.0
@@ -113,6 +125,7 @@ poses:
 
  -
    id: 8
+   command: 'vertical' 
    x: 0.684
    y: 2.88
    z: 0.0
@@ -121,6 +134,7 @@ poses:
    yaw: -20.0
  -
    id: 9
+   command: 'vertical' 
    x: 0.684
    y: 2.88
    z: -0.5
@@ -129,6 +143,7 @@ poses:
    yaw: -20.0
  -
    id: 8
+   command: 'right' 
    x: 0.684
    y: 2.88
    z: 0.0
@@ -137,6 +152,7 @@ poses:
    yaw: -20.0
  -
    id: 10
+   command: 'vertical' 
    x: 1.026
    y: 3.82
    z: 0.0
@@ -145,6 +161,7 @@ poses:
    yaw: -20.0
  -
    id: 11
+   command: 'vertical' 
    x: 1.026
    y: 3.82
    z: -0.5
@@ -153,6 +170,7 @@ poses:
    yaw: -20.0
  -
    id: 10
+   command: 'right' 
    x: 1.026
    y: 3.82
    z: 0.0
@@ -161,6 +179,7 @@ poses:
    yaw: -20.0
  -
    id: 12
+   command: 'vertical' 
    x: 1.37
    y: 4.76
    z: 0.0
@@ -169,6 +188,7 @@ poses:
    yaw: -20.0
  -
    id: 13
+   command: 'vertical' 
    x: 1.37
    y: 4.76
    z: -0.5
@@ -177,6 +197,7 @@ poses:
    yaw: -20.0
  -
    id: 12
+   command: 'right'
    x: 1.37
    y: 4.76
    z: 0.0
@@ -190,6 +211,7 @@ poses:
 ### Second Fence ###
  -
    id: 14
+   command: 'vertical' 
    x: 1.37
    y: 6.26
    z: 0.0
@@ -198,6 +220,7 @@ poses:
    yaw: 20.0
  -
    id: 15
+   command: 'vertical' 
    x: 1.37
    y: 6.26
    z: -0.5
@@ -206,6 +229,7 @@ poses:
    yaw: 20.0
  -
    id: 14
+   command: 'right' 
    x: 1.37
    y: 6.26
    z: 0.0
@@ -214,6 +238,7 @@ poses:
    yaw: 20.0
  -
    id: 16
+   command: 'vertical' 
    x: 1.026
    y: 7.20
    z: 0.0
@@ -222,6 +247,7 @@ poses:
    yaw: 20.0
  -
    id: 17
+   command: 'vertical' 
    x: 1.026
    y: 7.2
    z: -0.5
@@ -230,6 +256,7 @@ poses:
    yaw: 20.0
  -
    id: 16
+   command: 'right' 
    x: 1.026
    y: 7.2
    z: 0.0
@@ -238,6 +265,7 @@ poses:
    yaw: 20.0
  -
    id: 18
+   command: 'vertical' 
    x: 0.684
    y: 8.14
    z: 0.0
@@ -246,6 +274,7 @@ poses:
    yaw: 20.0
  -
    id: 19
+   command: 'vertical' 
    x: 0.684
    y: 8.14
    z: -0.5
@@ -254,6 +283,7 @@ poses:
    yaw: 20.0
  -
    id: 18
+   command: 'right' 
    x: 0.684
    y: 8.14
    z: 0.0
@@ -265,6 +295,7 @@ poses:
 # MID POINT Fence 2
  -
    id: 20
+   command: 'vertical' 
    x: 0.513
    y: 8.64
    z: 0.0
@@ -273,6 +304,7 @@ poses:
    yaw: 0.0
  -
    id: 21
+   command: 'vertical' 
    x: 0.513
    y: 8.64
    z: -0.5
@@ -281,6 +313,7 @@ poses:
    yaw: 0.0
  -
    id: 20
+   command: 'right' 
    x: 0.513
    y: 8.64
    z: 0.0
@@ -294,6 +327,7 @@ poses:
 
  -
    id: 22
+   command: 'vertical' 
    x: 0.684
    y: 9.14
    z: 0.0
@@ -302,6 +336,7 @@ poses:
    yaw: -20.0
  -
    id: 23
+   command: 'vertical' 
    x: 0.684
    y: 9.14
    z: -0.5
@@ -310,6 +345,7 @@ poses:
    yaw: -20.0
  -
    id: 22
+   command: 'right' 
    x: 0.684
    y: 9.14
    z: 0.0
@@ -318,6 +354,7 @@ poses:
    yaw: -20.0
  -
    id: 24
+   command: 'vertical' 
    x: 1.026
    y: 10.08
    z: 0.0
@@ -326,6 +363,7 @@ poses:
    yaw: -20.0
  -
    id: 25
+   command: 'vertical' 
    x: 1.026
    y: 10.08
    z: -0.5
@@ -334,6 +372,7 @@ poses:
    yaw: -20.0
  -
    id: 24
+   command: 'right' 
    x: 1.026
    y: 10.08
    z: 0.0
@@ -342,6 +381,7 @@ poses:
    yaw: -20.0
  -
    id: 26
+   command: 'vertical' 
    x: 1.37
    y: 11.02
    z: 0.0
@@ -350,6 +390,7 @@ poses:
    yaw: -20.0
  -
    id: 27
+   command: 'vertical' 
    x: 1.37
    y: 11.02
    z: -0.5
@@ -358,6 +399,7 @@ poses:
    yaw: -20.0
  -
    id: 26
+   command: 'finish' 
    x: 1.37
    y: 11.02
    z: 0.0

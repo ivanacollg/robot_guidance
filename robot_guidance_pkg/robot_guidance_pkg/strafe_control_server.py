@@ -7,6 +7,7 @@ from robot_guidance_interfaces.action import GoToSide
 
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import ReentrantCallbackGroup
+from scipy.spatial.transform import Rotation
 
 from rclpy.clock import Clock
 
@@ -71,6 +72,21 @@ class StrafeControlServer(Node):
         dy = pose1.position.y - pose2.position.y
         #dz = pose1.position.z - pose2.position.z
         return math.sqrt(dx*dx + dy*dy) #+ dz*dz)
+    
+    def compute_relative_y(self, robot_pose, goal_pose):
+        # Vector from robot to target in global frame
+        dx = goal_pose.position.x - robot_pose.position.x
+        dy = goal_pose.position.y - robot_pose.position.y
+
+        q = robot_pose.orientation
+        r = Rotation.from_quat([q.x, q.y, q.z, q.w])
+        roll, pitch, yaw = r.as_euler('xyz', degrees=False)
+
+        # Transform to robot frame (rotate the vector by -theta_r)
+        # Robot frame: X points forward, Y points to the left
+        y_robot = -math.sin(yaw) * dx + math.cos(yaw) * dy
+
+        return y_robot
 
     def execute_callback(self, goal_handle):
         self.get_logger().info('Executing goal...')
@@ -125,6 +141,8 @@ class StrafeControlServer(Node):
                 result = GoToSide.Result()
                 result.target_reached = True
                 return result
+            
+            relative_y = self.compute_relative_y(self.current_pose, target_pose)
 
             # robot has passed by closest point to goal on current path
             if (distance_error > min_distance_error + self.error_buffer):
@@ -146,7 +164,7 @@ class StrafeControlServer(Node):
             goal_handle.publish_feedback(feedback_msg)
 
             cmd = Twist()
-            cmd.linear.y = max(min(self.Kp * distance_error, self.max_velocity), -self.max_velocity)
+            cmd.linear.y = max(min(self.Kp * np.sign(relative_y)*distance_error, self.max_velocity), -self.max_velocity)
             self.cmd_pub.publish(cmd)
             #rate.sleep()
             rclpy.spin_once(self, timeout_sec=0.1)
