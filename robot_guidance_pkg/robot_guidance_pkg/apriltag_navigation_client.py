@@ -120,7 +120,7 @@ def main(args=None):
     client = ApriltagNavigationClient()
     pose_list = client.load_tag_map_and_convert_to_poses()
     client.publish_poses(pose_list)
-    commands = ['vertical', 'vertical', 'right', 'vertical', 'vertical', 'right', 'vertical', 'vertical', 'finish']
+    commands = ['vertical', 'vertical', 'horizontal', 'vertical', 'vertical', 'horizontal', 'vertical', 'vertical', 'finish']
     client.send_goal(pose_list, commands)
     try:
         rclpy.spin(client)
