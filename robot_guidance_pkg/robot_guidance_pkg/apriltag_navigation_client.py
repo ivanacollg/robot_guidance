@@ -9,7 +9,26 @@ import os
 import yaml
 
 class ApriltagNavigationClient(Node):
+    """
+    Client node for path navigation 
+
+    Args:
+        Node: Make this class a ROS2 Node 
+    
+    Returns:
+        None: None
+    """
     def __init__(self):
+        """
+        Initilizes the client
+
+        Args:
+            Self: 
+                The node 
+    
+        Returns:
+            None: None
+        """
         super().__init__('apriltag_navigation_client')
 
         self.declare_parameter('tag_map_path', '')
@@ -26,20 +45,46 @@ class ApriltagNavigationClient(Node):
 
 
     def send_goal(self, pose_list, commands):
+        """
+        Client sends a goal to the serve
+
+        Args:
+            self:
+                The client node
+            pose_list:
+                A list of goal poses
+            commands:
+                A list of commands
+
+        Returns:
+            None: None
+        
+        """
         self.apriltag_navigation_action_client.wait_for_server()
         goal = NavigateAprilTags.Goal()
         goal.goals = pose_list
         goal.commands = commands
         
-        self.get_logger().info('Sending goal:') #Ids = ' + str(ids) + ' commands = ' + str(commands))
+        self.get_logger().info('Sending goal:')
         self.apriltag_navigation_action_client. \
             send_goal_async(goal, feedback_callback=self.goal_feedback_callback). \
                 add_done_callback(self.goal_response_callback)
 
-        # timer to cancel goal to test functionality
-        # self.timer_ = self.create_timer(10.0, self.cancel_goal)
 
     def goal_response_callback(self, future):
+        """
+        Gets a future goal response (accepted or rejected) and waits for the server result
+
+        Args:
+            self: 
+                The client node
+            future:
+                A future goal response from the server
+                
+        Returns:
+            None: None
+        
+        """
         self.goal_handle_:ClientGoalHandle = future.result()
 
         if self.goal_handle_.accepted:
@@ -48,6 +93,19 @@ class ApriltagNavigationClient(Node):
 
 
     def goal_result_callback(self, future):
+        """
+        Gets and interprets a future goal result from the server 
+
+        Args:
+            self:
+                The client node
+            future:
+                A future goal result from the server
+
+        Returns:
+            None: None
+        
+        """
         status = future.result().status
         result = future.result().result
         if status == GoalStatus.STATUS_SUCCEEDED:
@@ -58,21 +116,58 @@ class ApriltagNavigationClient(Node):
             self.get_logger().warn("Canceled")
         self.get_logger().info("Result: " + str(result.navigation_completed))
 
-    
+
     def goal_feedback_callback(self, feedback_msg):
-        current_id = feedback_msg.feedback.current_id
-        current_command = feedback_msg.feedback.current_command
-        self.get_logger().info("Current ID: " + str(current_id) + " Current command: " + current_command)
+        """
+        Gets feedback from the server containing the next goal position and command  
+
+        Args:
+            self:
+                The client node
+            feedback_msg:
+                A feedback message from the server
+
+        Returns:
+            None: None
+        """
+        next_pose = feedback_msg.feedback.next_pose
+        next_command = feedback_msg.feedback.next_command
+        posX = next_pose.pose.position.x
+        posY = next_pose.pose.position.y
+        posZ = next_pose.pose.position.z
+        q = next_pose.pose.orientation
+        r = R.from_quat([q.x, q.y, q.z, q.w])
+        roll, pitch, yaw = r.as_euler('xyz', degrees=True)
+        self.get_logger().info(f'Next Goal:  X: {posX:.2f}, Y: {posY:.2f}, Z: {posZ:.2f}, Yaw: {yaw}, Next Command: {next_command}')
 
 
     def cancel_goal(self):
+        """
+        Cancels a goal request to the server
+
+        Args:
+            self:
+                The client node
+
+        Returns:
+            None: None
+
+        """
         self.get_logger().info("Send a cancel request")
         self.goal_handle_.cancel_goal_async()
-        
-        # timer to test functionality
-        # self.timer_.cancel()
+
 
     def load_tag_map_and_convert_to_poses(self):
+        """
+        Converts a map of poses and commands to a list of poses and a list of commands 
+        Args:
+            self:
+                The client node
+
+        Returns:
+            tuple:
+                A list of poses and a list of commands 
+        """
         tag_map_path = self.get_parameter('tag_map_path').get_parameter_value().string_value
 
         if not os.path.isfile(tag_map_path):
@@ -112,12 +207,25 @@ class ApriltagNavigationClient(Node):
 
 
     def publish_poses(self, pose_list):
+        """
+        Publishes a list of poses to a topic as a PoseArray
+
+        Args:
+            self:
+                The client node
+            pose_list:
+                A list of poses
+
+        Returns:
+            None: None
+        """
         msg = PoseArray()
         msg.header.frame_id = 'map'
         pose_only_list = [p.pose for p in pose_list]
         msg.poses = pose_only_list
         self.pose_pub.publish(msg)
         self.get_logger().info(f'Published PoseArray with {len(pose_list)} poses')
+
 
 def main(args=None):
     rclpy.init(args=args)

@@ -21,23 +21,37 @@ from tf2_ros import TransformException, Buffer, TransformListener
 from scipy.spatial.transform import Rotation  
 
 class AprilTagNavigation(Node):
+    """
+    Server node for path navigation 
 
+    Args:
+        Node: Make this class a ROS2 Node 
+
+    Returns:
+        None: None
+
+    """
     def __init__(self, navigator):
-        super().__init__('apriltag_navigation_server')
-        # Get topic nameSs
-        #self.declare_parameter('tag_detections_topic', '/tag_detections')
-        self.declare_parameter('odom_topic', '/odom')
-        #tag_topic = self.get_parameter('tag_detections_topic').get_parameter_value().string_value
-        odom_topic = self.get_parameter('odom_topic').get_parameter_value().string_value
+        """
+        Initiliazes the server
 
-        self.goal_tolerance = 0.05
+        Args:
+            self: 
+                The server node
+            navigator:
+                Later set to a Nav2 Basic Navigator node
+
+        Returns:
+            None: None
+
+        """
+        super().__init__('apriltag_navigation_server')
+        # Get topic names
+        self.declare_parameter('odom_topic', '/odom')
+        odom_topic = self.get_parameter('odom_topic').get_parameter_value().string_value
+        # self.goal_tolerance = 0.05
+        
         # Subscribers 
-        #self.tag_sub = self.create_subscription(
-        #    AprilTagDetectionArray,
-        #    tag_topic,
-        #    self.tag_callback,
-        #    10
-        #)
         self.odom_sub = self.create_subscription(
             Odometry,
             odom_topic,
@@ -47,8 +61,6 @@ class AprilTagNavigation(Node):
 
         # Basic Navigator for moving to a pose
         self.navigator = navigator
-        # waiting for Nav2Active
-        #self.navigator.waitUntilNav2Active()  # The BasicNavigator.waitUntilNav2Active() function explicitly checks for /amcl/get_state. If you're not using AMCL and that service doesn't exist, this call will block forever.
         
         self._action_server = ActionServer(
             self,
@@ -65,30 +77,78 @@ class AprilTagNavigation(Node):
         self.tf_buffer = Buffer()
         self.tf_listener = TransformListener(self.tf_buffer, self)
         # Variable Init
-        #self.current_detections = {}
         self.current_pose = None
-        # April Tag Type
-        self.tag_family = 'tag36h11'
-        #self.goal_offset = 0.5
     
+
     def odom_callback(self, msg: Odometry):
+        """
+        Updates the known current position of the robot when a new odometry message is received
+        
+        Args:
+            self:
+                The server node
+            msg:
+                A message of type Odometry from Nav2
+        
+        Returns:
+            None: None
+
+        """
         #self.get_logger().info('Getting Odometry...')
         self.current_pose = msg.pose.pose
 
-    #def tag_callback(self, msg: AprilTagDetectionArray):
-    #    self.current_detections = {
-    #        f'{detection.family}:{detection.id}': detection for detection in msg.detections
-    #        }
 
     def goal_callback(self, goal_request):
+        """
+        Called when the server receives a goal request from a client
+        Automatically accepts all goal requests and sends an accept goal response
+
+        Args:
+            self:
+                The server node
+            goal_request:
+                The goal request sent by the client
+
+        Returns:
+            None: None
+        """
         self.get_logger().info('Received goal request')
         return GoalResponse.ACCEPT
 
+
     def cancel_callback(self, goal_handle):
+        """
+        Called when the client requests to cancel a goal request, responds to the client with an accept or reject cancel reponse message
+
+        Args:
+            self:
+                The server node
+            goal_handle:
+                The server goal handle of the request to be canceled
+
+        """
         self.get_logger().info('Received cancel request')
         return CancelResponse.ACCEPT
     
+
     def get_strafe_heading(self, start_pose: Pose, goal_pose: Pose, stafe_direction) -> Quaternion:
+        """
+        Determines the heading required for the strafe server 
+        
+        Args:
+            self:
+                The server node
+            start_pose: 
+                The starting robot pose
+            goal_pose:
+                The goal pose at the end of the strafe 
+            strafe_direction:
+                The direction in which the robot faces while strafing
+        
+        Returns:
+            A Quaternion that is the required heading for the strafe server 
+                
+        """
         strafe_left = False
         if stafe_direction == "left":
             strafe_left = True
@@ -111,13 +171,47 @@ class AprilTagNavigation(Node):
         q.x, q.y, q.z, q.w = quat
         return q
     
+
     def compute_distance(self, pose1, pose2):
+        """
+        Computes the distance between two poses (neglecting the z axis)
+
+        Args:
+            self:
+                The server node
+            pose1:
+                The starting pose
+            pose2:
+                The ending pose
+
+        Returns:
+            float:
+                The distance between pose1 and pose2
+        """
         dx = pose1.position.x - pose2.position.x
         dy = pose1.position.y - pose2.position.y
         #dz = pose1.position.z - pose2.position.z
         return math.sqrt(dx*dx + dy*dy) #+ dz*dz)
 
+
     async def execute_callback(self, goal_handle):
+        """
+        Executes the navigation goal request sent by the client
+
+        Args:
+            self:
+                The server node
+
+            goal_handle:
+                The goal handle of the goal request the server is currently working on
+
+        Returns:
+            bool:
+                The result of the server operation \n
+                True if the navigation is successful. \n
+                False otherwise.
+
+        """
         goal = goal_handle.request
         goals_list = goal.goals
         command_list = goal.commands
@@ -127,6 +221,10 @@ class AprilTagNavigation(Node):
             next_goal = goals_list[i+1]
 
             self.get_logger().info(f'Going to pose number {i}')
+            feedback_msg = NavigateAprilTags.Feedback()
+            feedback_msg.next_pose = next_goal
+            feedback_msg.next_command = command_list[i+1]
+            goal_handle.publish_feedback(feedback_msg)
 
             # 3. Send initial goToPose
             # Build navigation goal from transform
@@ -139,23 +237,23 @@ class AprilTagNavigation(Node):
             self.navigator.goToPose(pose)
 
             start_time = self.get_clock().now()
-            # 4. Spin while tag is not yet detected and goal not reached
+            # 4. Spin while goal is not yet reached
             while rclpy.ok() and not self.navigator.isTaskComplete():
-                feedback = self.navigator.getFeedback()
                 elapsed_time = (self.get_clock().now() - start_time).nanoseconds / 1e9  # seconds
                 if elapsed_time > 600:
                 # If task taking too long or april tag detected
                     self.navigator.cancelTask()
                     self.get_logger().warn(f'Goal timeout without being reached {tag_id}')
                     goal_handle.abort()
-                    return NavigateAprilTags.Result(navigation_completed=False) # What is this?
+                    return NavigateAprilTags.Result(navigation_completed=False) 
                 
+
             if self.navigator.getResult() != TaskResult.SUCCEEDED:
                 self.get_logger().warn(f"Failed to reach a goal.")
                 goal_handle.abort()
                 return NavigateAprilTags.Result(navigation_completed=False)
 
-            # Execute command depending on Tag Pattern
+            # Execute command depending on Goal Pose
             self.get_logger().info(f'Reached pose number {i}, executing command...')
 
             command = command_list[i]
@@ -215,11 +313,11 @@ class AprilTagNavigation(Node):
                 self.navigator.goToPose(pose)
 
                 start_time = self.get_clock().now()
-                # 4. Spin while tag is not yet detected and goal not reached
+                # 4. Spin while goal is not yet reached
                 while rclpy.ok() and not self.navigator.isTaskComplete():
                     elapsed_time = (self.get_clock().now() - start_time).nanoseconds / 1e9  # seconds
                     if elapsed_time > 600:
-                    # If task taking too long or april tag detected
+                    # If task taking too long
                         self.navigator.cancelTask()
                         self.get_logger().warn(f'Strafing heading goal timeout without being reached')
                         goal_handle.abort()

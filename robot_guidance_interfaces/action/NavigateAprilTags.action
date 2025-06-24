@@ -1,12 +1,12 @@
 # NavigateAprilTags.action
 
 # Goal
-geometry_msgs/PoseStamped[] goals                 # List of AprilTag frame IDs (e.g., "tag36h11:0")
-string[] commands            # Commands for each tag (e.g., "stop", "drive_on_heading")
+geometry_msgs/PoseStamped[] goals                 # List of Poses (each with a reference coordinate frame and a timestamp)
+string[] commands            # Commands for each tag ("vertical", "left", "right", "finish")
 ---
 # Result
 bool navigation_completed                 # Whether the navigation sequence completed successfully
 ---
 # Feedback
-int32 current_id           # Currently processing/detected tag
-string current_command       # Currently executing command
+geometry_msgs/PoseStamped next_pose           # The next goal pose
+string next_command       # The next command to execute
