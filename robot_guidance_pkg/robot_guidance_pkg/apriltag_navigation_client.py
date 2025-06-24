@@ -46,7 +46,7 @@ class ApriltagNavigationClient(Node):
 
     def send_goal(self, pose_list, commands):
         """
-        Client sends a goal to the serve
+        Client sends a goal to the server
 
         Args:
             self:

@@ -10,7 +10,25 @@ import math
 
 
 class StrafeControlClient(Node):
+    """
+    Client node for GoToSide action (strafe action)
+
+    Args:
+        Node:
+            Make this class a ROS2 Node 
+    
+    """
     def __init__(self):
+        """
+        Initializes the client
+
+        Args:
+            self:
+                The client node
+        
+        Returns:
+            None: None
+        """
         super().__init__('stafe_control_client')
 
         self.action_client = ActionClient(
@@ -19,8 +37,21 @@ class StrafeControlClient(Node):
             'go_to_side',
         )
 
-    # called when robot wants to move to new depth, returns None
+
+    # called when robot wants to strafe to a new position, returns None
     def send_goal(self, target_pose):
+        """
+        Called when the client sends a strafe goal to the server
+
+        Args:
+            self:
+                The client node
+            target_pose:
+                the goal pose
+
+        Returns:
+            None: None
+        """
         self.get_logger().info("Waiting for server")
         # wait for server to be running
         self.action_client.wait_for_server()
@@ -30,7 +61,7 @@ class StrafeControlClient(Node):
         goal.target_pose = target_pose
         
         # send goal and set the feedback callback func
-        self.get_logger().info('Sending goal: Target Depth = ' + str(target_pose))
+        self.get_logger().info('Sending goal: Target Goal = ' + str(target_pose))
         sending = self.action_client
         future_server_response = sending.send_goal_async(goal, feedback_callback=self.goal_feedback_callback) 
 
@@ -40,6 +71,18 @@ class StrafeControlClient(Node):
 
     # called when server responds about accept/reject of goal
     def goal_response_callback(self, server_response):
+        """
+        Gets a future server_response (goal accepted or rejected) and waits for the server result
+
+        Args:
+            self:
+                The client node
+            server_response:
+                A future goal response from the server
+
+        Returns:
+            None: None
+        """
         self.goal_handle = server_response.result() # get goal handle
         if not self.goal_handle.accepted: # check if goal not accepted
             self.get_logger().warn('Goal Rejected')
@@ -51,6 +94,18 @@ class StrafeControlClient(Node):
 
     # called when goal completed and result received by client 
     def goal_result_callback(self, server_result): 
+        """
+        Gets and interprets a future goal result from the server
+
+        Args:
+            self:
+                The client node
+            server_result:
+                A future goal result from the server
+
+        Returns:
+            None: None
+        """
         service_result = server_result.result() # get service result
         status = service_result.status   # ClientGoalHandle goal status
         result = service_result.result   # action specific result
@@ -66,12 +121,35 @@ class StrafeControlClient(Node):
 
     # called when feedback is published by the server
     def goal_feedback_callback(self, feedback_msg):
+        """
+        Gets feedback from the server containing the remaining distance from the goal
+
+        Args:
+            self: 
+                The client node
+            feedback_msg:
+                A feedback message from the server
+
+        Returns:
+            None: None
+        """
         distance_remaining= feedback_msg.feedback.distance_remaining
         self.get_logger().info("Current distance remaining: " + str(distance_remaining))
 
 
     # called when robot wants to cancel goal request
     def cancel_goal(self):
+        """
+        Cancels a goal request to the server
+
+        Args:
+            self:
+                The client node
+
+        Returns:
+            None: None
+
+        """
         self.get_logger().info("Send a cancel request")
         self.goal_handle.cancel_goal_async()  # sends cancel request to server
 
