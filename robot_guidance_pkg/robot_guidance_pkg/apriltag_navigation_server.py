@@ -22,18 +22,15 @@ from scipy.spatial.transform import Rotation
 
 class AprilTagNavigation(Node):
     """
-    Server node for path navigation 
+    Server node for path navigation.
 
     Args:
-        Node: Make this class a ROS2 Node 
-
-    Returns:
-        None: None
-
+        Node:
+            Make this class a ROS2 Node 
     """
     def __init__(self, navigator):
         """
-        Initiliazes the server
+        Initiliazes the server.
 
         Args:
             self: 
@@ -43,7 +40,6 @@ class AprilTagNavigation(Node):
 
         Returns:
             None: None
-
         """
         super().__init__('apriltag_navigation_server')
         # Get topic names
@@ -82,7 +78,7 @@ class AprilTagNavigation(Node):
 
     def odom_callback(self, msg: Odometry):
         """
-        Updates the known current position of the robot when a new odometry message is received
+        Updates the known current position of the robot when a new odometry message is received.
         
         Args:
             self:
@@ -92,7 +88,6 @@ class AprilTagNavigation(Node):
         
         Returns:
             None: None
-
         """
         #self.get_logger().info('Getting Odometry...')
         self.current_pose = msg.pose.pose
@@ -100,8 +95,8 @@ class AprilTagNavigation(Node):
 
     def goal_callback(self, goal_request):
         """
-        Called when the server receives a goal request from a client
-        Automatically accepts all goal requests and sends an accept goal response
+        Called when the server receives a goal request from a client. \n
+        Automatically accepts all goal requests and sends an accept goal response.
 
         Args:
             self:
@@ -118,14 +113,16 @@ class AprilTagNavigation(Node):
 
     def cancel_callback(self, goal_handle):
         """
-        Called when the client requests to cancel a goal request, responds to the client with an accept or reject cancel reponse message
+        Called when the client requests to cancel a goal request. \n
+        Responds to the client with an accept or reject cancel reponse message.
 
         Args:
             self:
                 The server node
             goal_handle:
                 The server goal handle of the request to be canceled
-
+        Returns:
+            An accepted or rejected CancelResponse
         """
         self.get_logger().info('Received cancel request')
         return CancelResponse.ACCEPT
@@ -133,7 +130,7 @@ class AprilTagNavigation(Node):
 
     def get_strafe_heading(self, start_pose: Pose, goal_pose: Pose, stafe_direction) -> Quaternion:
         """
-        Determines the heading required for the strafe server 
+        Determines the heading required for the strafe server.
         
         Args:
             self:
@@ -146,8 +143,7 @@ class AprilTagNavigation(Node):
                 The direction in which the robot faces while strafing
         
         Returns:
-            A Quaternion that is the required heading for the strafe server 
-                
+            A Quaternion that is the required heading for the strafe server
         """
         strafe_left = False
         if stafe_direction == "left":
@@ -174,7 +170,7 @@ class AprilTagNavigation(Node):
 
     def compute_distance(self, pose1, pose2):
         """
-        Computes the distance between two poses (neglecting the z axis)
+        Computes the distance between two poses (neglecting the z axis).
 
         Args:
             self:
@@ -196,21 +192,20 @@ class AprilTagNavigation(Node):
 
     async def execute_callback(self, goal_handle):
         """
-        Executes the navigation goal request sent by the client
+        Executes the navigation goal request sent by the client.
 
         Args:
             self:
                 The server node
 
             goal_handle:
-                The goal handle of the goal request the server is currently working on
+                The server goal handle of the goal request in progress
 
         Returns:
             bool:
                 The result of the server operation \n
                 True if the navigation is successful. \n
                 False otherwise.
-
         """
         goal = goal_handle.request
         goals_list = goal.goals

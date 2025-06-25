@@ -4,31 +4,28 @@ from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from robot_guidance_interfaces.action import GoToSide
-
-from rclpy.executors import MultiThreadedExecutor
-from rclpy.callback_groups import ReentrantCallbackGroup
+from rclpy.executors import MultiThreadedExecutor # For multithreading
+from rclpy.callback_groups import ReentrantCallbackGroup # For multithreading
 from scipy.spatial.transform import Rotation
-
 from rclpy.clock import Clock
-
 import numpy as np
-
 import math
+
+# Cancel all goals
+# ros2 service call /go_to_side/_action/cancel_goal action_msgs/srv/CancelGoal "{}"
+
 
 class StrafeControlServer(Node):
     """
-    Server node for GoToSide action (Strafe action)
+    Server node for GoToSide action (Strafe action).
 
     Args:
         Node:
             Make this class a ROS2 Node
-
-    Returns:
-        None: None 
     """
     def __init__(self):
         """
-        Initializes the server
+        Initializes the server.
 
         Args:
             self:
@@ -74,7 +71,7 @@ class StrafeControlServer(Node):
 
     def odom_callback(self, msg):
         """
-        Updates the known current position of the robot when a new odometry message is received
+        Updates the known current position of the robot when a new odometry message is received.
         
         Args:
             self:
@@ -84,7 +81,6 @@ class StrafeControlServer(Node):
         
         Returns:
             None: None
-
         """
         #self.get_logger().info('Getting Odometry...')
         self.current_pose = msg.pose.pose
@@ -92,8 +88,8 @@ class StrafeControlServer(Node):
 
     def goal_callback(self, goal_request):
         """
-        Called when the server receives a goal request from a client
-        Automatically accepts all goal requests and sends an accept goal response
+        Called when the server receives a goal request from a client. \n
+        Automatically accepts all goal requests and sends an accept goal response.
 
         Args:
             self:
@@ -107,20 +103,20 @@ class StrafeControlServer(Node):
         self.get_logger().info('Received goal request')
         return GoalResponse.ACCEPT
 
-    # ros2 action send_goal /go_to_side robot_guidance_interfaces/action/GoToSide "{target_y: 1.5}"  - sending a goal
-    # ros2 service call /go_to_side/_action/cancel_goal action_msgs/srv/CancelGoal "{}"  - Cancels all goals
-
 
     def cancel_callback(self, goal_handle):
         """
-        Called when the client requests to cancel a goal request, responds to the client with an accept or reject cancel reponse message
+        Called when the client requests to cancel a goal request. \n
+        Responds to the client with an accept or reject cancel reponse message.
 
         Args:
             self:
                 The server node
             goal_handle:
                 The server goal handle of the request to be canceled
-
+        
+        Returns: 
+            An accepted or rejected CancelResponse 
         """
         self.get_logger().info('Received cancel request')
         self.stop()
@@ -129,7 +125,7 @@ class StrafeControlServer(Node):
 
     def compute_distance(self, pose1, pose2):
         """
-        Computes the distance between two poses (neglecting the z axis)
+        Computes the distance between two poses (neglecting the z axis).
 
         Args:
             self:
@@ -151,7 +147,7 @@ class StrafeControlServer(Node):
 
     def compute_relative_y(self, robot_pose, goal_pose):
         """
-            Computes the relative yaw of the robot 
+            Computes the relative yaw of the robot.
         
         Args:
             self:
@@ -182,18 +178,18 @@ class StrafeControlServer(Node):
 
     def execute_callback(self, goal_handle):
         """
-        Executres the GoToSide goal (strafe goal) request sent by the client
+        Executres the GoToSide goal (strafe goal) request sent by the client.
 
         Args:
             self:
                 The server node
             goal_handle:
-                The server goal handle of the goal request the server is currently working on
+                The server goal handle for the goal request in progress
         
         Returns:
             bool:
-                The result of the server operation \n
-                True if the strafe is succesful. \n
+                The result of the server operation. \n
+                True if the strafe is successful. \n
                 False otherwise. 
         """
         self.get_logger().info('Executing goal...')
@@ -283,7 +279,7 @@ class StrafeControlServer(Node):
 
     def stop(self):
         """
-        Stops the robot by setting and publising velocities of 0 
+        Stops the robot by setting and publising velocities of 0.
         
         Args:
             self:

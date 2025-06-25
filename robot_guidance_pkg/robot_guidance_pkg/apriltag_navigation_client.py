@@ -10,17 +10,15 @@ import yaml
 
 class ApriltagNavigationClient(Node):
     """
-    Client node for path navigation 
+    Client node for path navigation.
 
     Args:
-        Node: Make this class a ROS2 Node 
-    
-    Returns:
-        None: None
+        Node:
+            Make this class a ROS2 Node 
     """
     def __init__(self):
         """
-        Initilizes the client
+        Initilizes the client.
 
         Args:
             Self: 
@@ -46,7 +44,7 @@ class ApriltagNavigationClient(Node):
 
     def send_goal(self, pose_list, commands):
         """
-        Client sends a goal to the server
+        Client sends a goal to the server.
 
         Args:
             self:
@@ -58,7 +56,6 @@ class ApriltagNavigationClient(Node):
 
         Returns:
             None: None
-        
         """
         self.apriltag_navigation_action_client.wait_for_server()
         goal = NavigateAprilTags.Goal()
@@ -73,7 +70,7 @@ class ApriltagNavigationClient(Node):
 
     def goal_response_callback(self, future):
         """
-        Gets a future goal response (accepted or rejected) and waits for the server result
+        Gets a future goal response (accepted or rejected) and waits for the server result.
 
         Args:
             self: 
@@ -83,7 +80,6 @@ class ApriltagNavigationClient(Node):
                 
         Returns:
             None: None
-        
         """
         self.goal_handle_:ClientGoalHandle = future.result()
 
@@ -94,7 +90,7 @@ class ApriltagNavigationClient(Node):
 
     def goal_result_callback(self, future):
         """
-        Gets and interprets a future goal result from the server 
+        Gets and interprets a future goal result from the server.
 
         Args:
             self:
@@ -104,7 +100,6 @@ class ApriltagNavigationClient(Node):
 
         Returns:
             None: None
-        
         """
         status = future.result().status
         result = future.result().result
@@ -119,7 +114,7 @@ class ApriltagNavigationClient(Node):
 
     def goal_feedback_callback(self, feedback_msg):
         """
-        Gets feedback from the server containing the next goal position and command  
+        Gets feedback from the server containing the next goal position and command.
 
         Args:
             self:
@@ -143,7 +138,7 @@ class ApriltagNavigationClient(Node):
 
     def cancel_goal(self):
         """
-        Cancels a goal request to the server
+        Sends a goal cancel request to the server.
 
         Args:
             self:
@@ -151,7 +146,6 @@ class ApriltagNavigationClient(Node):
 
         Returns:
             None: None
-
         """
         self.get_logger().info("Send a cancel request")
         self.goal_handle_.cancel_goal_async()
@@ -159,7 +153,7 @@ class ApriltagNavigationClient(Node):
 
     def load_tag_map_and_convert_to_poses(self):
         """
-        Converts a map of poses and commands to a list of poses and a list of commands 
+        Converts a map of poses and commands to a list of poses and a list of commands.
         Args:
             self:
                 The client node
@@ -208,7 +202,7 @@ class ApriltagNavigationClient(Node):
 
     def publish_poses(self, pose_list):
         """
-        Publishes a list of poses to a topic as a PoseArray
+        Publishes a list of poses to a topic as a PoseArray.
 
         Args:
             self:

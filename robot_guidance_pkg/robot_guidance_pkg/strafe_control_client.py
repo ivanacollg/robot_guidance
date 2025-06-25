@@ -11,16 +11,15 @@ import math
 
 class StrafeControlClient(Node):
     """
-    Client node for GoToSide action (strafe action)
+    Client node for GoToSide action (strafe action).
 
     Args:
         Node:
             Make this class a ROS2 Node 
-    
     """
     def __init__(self):
         """
-        Initializes the client
+        Initializes the client.
 
         Args:
             self:
@@ -41,13 +40,13 @@ class StrafeControlClient(Node):
     # called when robot wants to strafe to a new position, returns None
     def send_goal(self, target_pose):
         """
-        Called when the client sends a strafe goal to the server
+        Called when the client sends a strafe goal to the server.
 
         Args:
             self:
                 The client node
             target_pose:
-                the goal pose
+                The goal pose
 
         Returns:
             None: None
@@ -72,7 +71,7 @@ class StrafeControlClient(Node):
     # called when server responds about accept/reject of goal
     def goal_response_callback(self, server_response):
         """
-        Gets a future server_response (goal accepted or rejected) and waits for the server result
+        Gets a future server_response (goal accepted or rejected) and waits for the server result.
 
         Args:
             self:
@@ -93,9 +92,9 @@ class StrafeControlClient(Node):
 
 
     # called when goal completed and result received by client 
-    def goal_result_callback(self, server_result): 
+    def goal_result_callback(self, server_result):
         """
-        Gets and interprets a future goal result from the server
+        Gets and interprets a future goal result from the server.
 
         Args:
             self:
@@ -122,7 +121,7 @@ class StrafeControlClient(Node):
     # called when feedback is published by the server
     def goal_feedback_callback(self, feedback_msg):
         """
-        Gets feedback from the server containing the remaining distance from the goal
+        Gets feedback from the server containing the remaining distance from the goal.
 
         Args:
             self: 
@@ -140,7 +139,7 @@ class StrafeControlClient(Node):
     # called when robot wants to cancel goal request
     def cancel_goal(self):
         """
-        Cancels a goal request to the server
+        Sends a goal cancel request to the server.
 
         Args:
             self:
@@ -148,7 +147,6 @@ class StrafeControlClient(Node):
 
         Returns:
             None: None
-
         """
         self.get_logger().info("Send a cancel request")
         self.goal_handle.cancel_goal_async()  # sends cancel request to server
