@@ -4,21 +4,37 @@ from rclpy.action import ActionServer, CancelResponse, GoalResponse
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from robot_guidance_interfaces.action import GoToDepth
-
-from rclpy.executors import MultiThreadedExecutor
-from rclpy.callback_groups import ReentrantCallbackGroup
-
+from rclpy.executors import MultiThreadedExecutor # For multithreading
+from rclpy.callback_groups import ReentrantCallbackGroup # For multithreading
 from rclpy.clock import Clock
-
 import numpy as np
 
-import math
 
-# ros2 action send_goal /go_to_depth robot_guidance_interfaces/action/GoToDepth "{target_depth: 1.5}"  - sending a goal
-# ros2 service call /go_to_depth/_action/cancel_goal action_msgs/srv/CancelGoal "{}"  - Cancels all goals
+# Send a goal
+# ros2 action send_goal /go_to_depth robot_guidance_interfaces/action/GoToDepth "{target_depth: 1.5}"
+
+# Cancel all goals
+# ros2 service call /go_to_depth/_action/cancel_goal action_msgs/srv/CancelGoal "{}"
 
 class DepthControlServer(Node):
+    """
+    Server node for GoToDepth action.
+
+    Args:
+        Node:
+            Make this class a ROS2 Node
+    """
     def __init__(self):
+        """
+        Initializes the server.
+
+        Args:
+            self:
+                The server node
+        
+        Returns:
+            None: None
+        """
         super().__init__('depth_control_server')
 
         # Declare parameters with defaults
@@ -54,11 +70,39 @@ class DepthControlServer(Node):
         self.current_depth = None  # z from odometry
         self._active = False
 
+
     def odom_callback(self, msg):
+        """
+        Updates the known current position of the robot when a new odometry message is received.
+
+        Args:
+            self:
+                The server node
+            msg:
+                A message of type Odometry from Nav2
+
+        Returns:
+            None: None
+        """
         #self.get_logger().info('Getting Odometry...')
         self.current_depth = msg.pose.pose.position.z
 
+
     def goal_callback(self, goal_request):
+        """
+        Called when the server receives a goal request from a client. \n
+        Rejects a goal if the target_depth > 0. \n
+        Accepts the goal otherwise.
+
+        Args:
+            self:
+                The server node
+            goal_request:
+                The goal request sent by the client
+
+        Returns:
+            An accepted or rejected GoalResponse
+        """
         self.get_logger().info('Received goal request')
 
         if goal_request.target_depth > 0:
@@ -67,21 +111,50 @@ class DepthControlServer(Node):
             return GoalResponse.REJECT
         return GoalResponse.ACCEPT
 
+
     def cancel_callback(self, goal_handle): # client calls a cancel request, goal_handle is a ServerGoalHandle
+        """
+        Called when teh client requests to cancel a goal request. \n
+        Responds to the client with an accept or reject cancel response message.
+
+        Args:
+            self:
+                The server node
+            goal_handle:
+                The server goal handle of the request to be canceled
+        
+        Returns:
+            An accepeted or rejected CancelResponse
+        """
         self.get_logger().info('Received cancel request')
         self.stop()
         return CancelResponse.ACCEPT # sets goal_handle.is_cancel_requested to true
 
+
     def execute_callback(self, goal_handle): # automatically called from goal_callback func when goal is accepted, goal_handle is a ServerGoalHandle
+        """
+        Executes the GoToDepth goal request sent by the client.
+
+        Args:
+            self:
+                The server node
+            goal_handle:
+                The server goal handle for the goal request in progress
+
+        Returns:
+            bool:
+                The result of the server operation. \n
+                True if the GoToDepth action is successful. \n
+                False otherwise. 
+        """
         self.get_logger().info('Executing goal...')
         # initialize variables
         target_depth = float(goal_handle.request.target_depth) # get our action goal
-        rate = self.create_rate(10)
-        self.active = True
+        #rate = self.create_rate(10)
         min_error = np.inf
         start_time = Clock().now()
 
-        while rclpy.ok() and self.active:
+        while rclpy.ok():
             current_time = Clock().now()
             start_secs = start_time.nanoseconds / 1e9
             current_secs = current_time.nanoseconds / 1e9
@@ -152,10 +225,22 @@ class DepthControlServer(Node):
         goal_handle.abort()
         return GoToDepth.Result(reached_final_depth=False)
 
+
     def stop(self):
+        """
+        Stops the robot by setting and publishing velcoities of 0. 
+
+        Args:
+            self:
+                The server node
+        
+        Returns:
+            None: None
+        """
         cmd = Twist()
         self.cmd_pub.publish(cmd)
         self.get_logger().info('Stopping.')
+
 
 def main(args=None):
     rclpy.init(args=args)

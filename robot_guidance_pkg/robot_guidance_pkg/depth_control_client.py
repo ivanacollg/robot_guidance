@@ -6,7 +6,24 @@ from robot_guidance_interfaces.action import GoToDepth
 
 
 class DepthControlClient(Node):
+    """
+    Client node for GoToDepth action.
+
+    Args:
+        Node:
+            Make this class a ROS2 Node
+    """
     def __init__(self):
+        """
+        Initializes the client.
+
+        Args:
+            self:
+                The client node
+        
+        Returns:
+            None: None
+        """
         super().__init__('depth_control_client')
         self.action_client = ActionClient(
             self, 
@@ -17,6 +34,18 @@ class DepthControlClient(Node):
 
     # called when robot wants to move to new depth, returns None
     def send_goal(self, target_depth):
+        """
+        Called when the client sends a depth goal to the server.
+
+        Args:
+            self:
+                The client node
+            target_depth:
+                The target depth(z position) of the next goal
+                
+        Returns:
+            None: None
+        """
         # wait for server to be running
         self.action_client.wait_for_server()
 
@@ -45,6 +74,18 @@ class DepthControlClient(Node):
 
     # called when server responds about accept/reject of goal
     def goal_response_callback(self, server_response):
+        """
+        Gets a future server_response (goal accepted or rejected) and waits for the server result.
+
+        Args:
+            self:
+                The client node
+            server_response:
+                A future goal reponse from the server
+        
+        Returns:
+            None: None
+        """
         self.goal_handle = server_response.result() # get goal handle
         if not self.goal_handle.accepted: # check if goal not accepted
             self.get_logger().warn('Goal Rejected')
@@ -56,7 +97,19 @@ class DepthControlClient(Node):
 
 
     # called when goal completed and result received by client 
-    def goal_result_callback(self, server_result): 
+    def goal_result_callback(self, server_result):
+        """
+        Gets a interprets a future goal result from the server.
+
+        Args:
+            self:
+                The client node
+            server_result:
+                A future goal result from the server
+
+        Returns:
+            None: None
+        """
         service_result = server_result.result() # get service result
         status = service_result.status   # ClientGoalHandle goal status
         result = service_result.result   # action specific result
@@ -74,16 +127,49 @@ class DepthControlClient(Node):
 
     # called when feedback is published by the server
     def goal_feedback_callback(self, feedback_msg):
+        """
+        Gets feedback from the server containing the current depth of the robot.
+
+        Args:
+            self:
+                The client node
+            feedback_msg:
+                A feedback message from the server
+        
+        Returns:
+            None: None
+        """
         current_depth = feedback_msg.feedback.current_depth
         self.get_logger().info("Current depth: " + str(current_depth))
 
 
     # called when robot wants to cancel goal request
     def cancel_goal(self):
+        """
+        Sends a goal cancel request to the server. 
+
+        Args:
+            self:
+                The client node
+
+        Returns:
+            None: None
+        """
         self.get_logger().info("Send a cancel request")
         self.goal_handle.cancel_goal_async()  # sends cancel request to server
 
+
     def shutdown_node(self):
+        """
+        Shutdown the client node
+        
+        Args:
+            self:
+                The client node
+        
+        Return:
+            None: None
+        """
         rclpy.shutdown()
 
 def main(args=None):
