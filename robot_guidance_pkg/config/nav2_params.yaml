@@ -37,6 +37,7 @@ controller_server:
 
       use_rotate_to_heading: true
       rotate_to_heading_angular_vel: 0.1
+      use_velocity_scaled_lookahead_dist: true
       
     
     # Goal checker plugin setup
