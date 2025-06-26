@@ -1,5 +1,6 @@
 import rclpy
 from rclpy.node import Node
+from rclpy.task import Future
 from rclpy.action import ActionClient
 from rclpy.action.client import GoalStatus
 from robot_guidance_interfaces.action import GoToDepth
@@ -33,7 +34,7 @@ class DepthControlClient(Node):
 
 
     # called when robot wants to move to new depth, returns None
-    def send_goal(self, target_depth):
+    def send_goal(self, target_depth: float):
         """
         Called when the client sends a depth goal to the server.
 
@@ -73,7 +74,7 @@ class DepthControlClient(Node):
 
 
     # called when server responds about accept/reject of goal
-    def goal_response_callback(self, server_response):
+    def goal_response_callback(self, server_response: Future):
         """
         Gets a future server_response (goal accepted or rejected) and waits for the server result.
 
@@ -97,7 +98,7 @@ class DepthControlClient(Node):
 
 
     # called when goal completed and result received by client 
-    def goal_result_callback(self, server_result):
+    def goal_result_callback(self, server_result: Future):
         """
         Gets a interprets a future goal result from the server.
 
@@ -126,7 +127,7 @@ class DepthControlClient(Node):
         return
 
     # called when feedback is published by the server
-    def goal_feedback_callback(self, feedback_msg):
+    def goal_feedback_callback(self, feedback_msg: GoToDepth.Feedback):
         """
         Gets feedback from the server containing the current depth of the robot.
 

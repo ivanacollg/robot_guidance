@@ -7,6 +7,7 @@ import numpy as np
 
 import rclpy
 from rclpy.action import ActionServer, CancelResponse, GoalResponse, ActionClient
+from rclpy.action.server import ServerGoalHandle
 from rclpy.node import Node
 
 from geometry_msgs.msg import PoseStamped, Point, Pose, Quaternion
@@ -28,7 +29,7 @@ class AprilTagNavigation(Node):
         Node:
             Make this class a ROS2 Node 
     """
-    def __init__(self, navigator):
+    def __init__(self, navigator: BasicNavigator):
         """
         Initiliazes the server.
 
@@ -36,7 +37,7 @@ class AprilTagNavigation(Node):
             self: 
                 The server node
             navigator:
-                Later set to a Nav2 Basic Navigator node
+                A Nav2 Basic Navigator node
 
         Returns:
             None: None
@@ -93,7 +94,7 @@ class AprilTagNavigation(Node):
         self.current_pose = msg.pose.pose
 
 
-    def goal_callback(self, goal_request):
+    def goal_callback(self, goal_request: NavigateAprilTags.Goal):
         """
         Called when the server receives a goal request from a client. \n
         Automatically accepts all goal requests and sends an accept goal response.
@@ -111,7 +112,7 @@ class AprilTagNavigation(Node):
         return GoalResponse.ACCEPT
 
 
-    def cancel_callback(self, goal_handle):
+    def cancel_callback(self, goal_handle: ServerGoalHandle):
         """
         Called when the client requests to cancel a goal request. \n
         Responds to the client with an accept or reject cancel reponse message.
@@ -168,7 +169,7 @@ class AprilTagNavigation(Node):
         return q
     
 
-    def compute_distance(self, pose1, pose2):
+    def compute_distance(self, pose1: Pose, pose2: Pose):
         """
         Computes the distance between two poses (neglecting the z axis).
 
@@ -190,7 +191,7 @@ class AprilTagNavigation(Node):
         return math.sqrt(dx*dx + dy*dy) #+ dz*dz)
 
 
-    async def execute_callback(self, goal_handle):
+    async def execute_callback(self, goal_handle: ServerGoalHandle):
         """
         Executes the navigation goal request sent by the client.
 

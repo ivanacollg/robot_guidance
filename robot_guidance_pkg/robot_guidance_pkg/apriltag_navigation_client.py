@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import PoseStamped, PoseArray
+from rclpy.task import Future
 from rclpy.action import ActionClient
 from rclpy.action.client import ClientGoalHandle, GoalStatus
 from robot_guidance_interfaces.action import NavigateAprilTags
@@ -42,7 +43,7 @@ class ApriltagNavigationClient(Node):
         )
 
 
-    def send_goal(self, pose_list, commands):
+    def send_goal(self, pose_list: list[PoseStamped], commands: list[str]):
         """
         Client sends a goal to the server.
 
@@ -68,7 +69,7 @@ class ApriltagNavigationClient(Node):
                 add_done_callback(self.goal_response_callback)
 
 
-    def goal_response_callback(self, future):
+    def goal_response_callback(self, future: Future):
         """
         Gets a future goal response (accepted or rejected) and waits for the server result.
 
@@ -88,7 +89,7 @@ class ApriltagNavigationClient(Node):
                 add_done_callback(self.goal_result_callback)
 
 
-    def goal_result_callback(self, future):
+    def goal_result_callback(self, future: Future):
         """
         Gets and interprets a future goal result from the server.
 
@@ -112,7 +113,7 @@ class ApriltagNavigationClient(Node):
         self.get_logger().info("Result: " + str(result.navigation_completed))
 
 
-    def goal_feedback_callback(self, feedback_msg):
+    def goal_feedback_callback(self, feedback_msg: NavigateAprilTags.Feedback):
         """
         Gets feedback from the server containing the next goal position and command.
 
@@ -200,7 +201,7 @@ class ApriltagNavigationClient(Node):
         return pose_list, command_list
 
 
-    def publish_poses(self, pose_list):
+    def publish_poses(self, pose_list: list[PoseStamped]):
         """
         Publishes a list of poses to a topic as a PoseArray.
 

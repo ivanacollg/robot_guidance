@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
+from rclpy.action.server import ServerGoalHandle
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from robot_guidance_interfaces.action import GoToDepth
@@ -71,7 +72,7 @@ class DepthControlServer(Node):
         self._active = False
 
 
-    def odom_callback(self, msg):
+    def odom_callback(self, msg: Odometry):
         """
         Updates the known current position of the robot when a new odometry message is received.
 
@@ -88,7 +89,7 @@ class DepthControlServer(Node):
         self.current_depth = msg.pose.pose.position.z
 
 
-    def goal_callback(self, goal_request):
+    def goal_callback(self, goal_request: GoToDepth.Goal):
         """
         Called when the server receives a goal request from a client. \n
         Rejects a goal if the target_depth > 0. \n
@@ -112,7 +113,7 @@ class DepthControlServer(Node):
         return GoalResponse.ACCEPT
 
 
-    def cancel_callback(self, goal_handle): # client calls a cancel request, goal_handle is a ServerGoalHandle
+    def cancel_callback(self, goal_handle: ServerGoalHandle): # client calls a cancel request, goal_handle is a ServerGoalHandle
         """
         Called when teh client requests to cancel a goal request. \n
         Responds to the client with an accept or reject cancel response message.
@@ -131,7 +132,7 @@ class DepthControlServer(Node):
         return CancelResponse.ACCEPT # sets goal_handle.is_cancel_requested to true
 
 
-    def execute_callback(self, goal_handle): # automatically called from goal_callback func when goal is accepted, goal_handle is a ServerGoalHandle
+    def execute_callback(self, goal_handle: ServerGoalHandle): # automatically called from goal_callback func when goal is accepted, goal_handle is a ServerGoalHandle
         """
         Executes the GoToDepth goal request sent by the client.
 

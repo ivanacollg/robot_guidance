@@ -1,7 +1,8 @@
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionServer, CancelResponse, GoalResponse
-from geometry_msgs.msg import Twist
+from rclpy.action.server import ServerGoalHandle
+from geometry_msgs.msg import Twist, Pose
 from nav_msgs.msg import Odometry
 from robot_guidance_interfaces.action import GoToSide
 from rclpy.executors import MultiThreadedExecutor # For multithreading
@@ -69,7 +70,7 @@ class StrafeControlServer(Node):
         self.current_y = None  # z from odometry
 
 
-    def odom_callback(self, msg):
+    def odom_callback(self, msg: Odometry):
         """
         Updates the known current position of the robot when a new odometry message is received.
         
@@ -86,7 +87,7 @@ class StrafeControlServer(Node):
         self.current_pose = msg.pose.pose
 
 
-    def goal_callback(self, goal_request):
+    def goal_callback(self, goal_request: GoToSide.Goal):
         """
         Called when the server receives a goal request from a client. \n
         Automatically accepts all goal requests and sends an accept goal response.
@@ -104,7 +105,7 @@ class StrafeControlServer(Node):
         return GoalResponse.ACCEPT
 
 
-    def cancel_callback(self, goal_handle):
+    def cancel_callback(self, goal_handle: ServerGoalHandle):
         """
         Called when the client requests to cancel a goal request. \n
         Responds to the client with an accept or reject cancel reponse message.
@@ -123,7 +124,7 @@ class StrafeControlServer(Node):
         return CancelResponse.ACCEPT
 
 
-    def compute_distance(self, pose1, pose2):
+    def compute_distance(self, pose1: Pose, pose2: Pose):
         """
         Computes the distance between two poses (neglecting the z axis).
 
@@ -145,7 +146,7 @@ class StrafeControlServer(Node):
         return math.sqrt(dx*dx + dy*dy) #+ dz*dz)
     
 
-    def compute_relative_y(self, robot_pose, goal_pose):
+    def compute_relative_y(self, robot_pose: Pose, goal_pose: Pose):
         """
             Computes the relative yaw of the robot.
         
@@ -176,7 +177,7 @@ class StrafeControlServer(Node):
         return y_robot
 
 
-    def execute_callback(self, goal_handle):
+    def execute_callback(self, goal_handle: ServerGoalHandle):
         """
         Executres the GoToSide goal (strafe goal) request sent by the client.
 
