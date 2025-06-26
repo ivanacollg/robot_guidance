@@ -50,6 +50,7 @@ class StrafeControlServer(Node):
         )
 
         self.current_y = None  # z from odometry
+        self.last_y = None
 
     def odom_callback(self, msg):
         #self.get_logger().info('Getting Odometry...')
@@ -128,11 +129,13 @@ class StrafeControlServer(Node):
                 return GoToSide.Result(target_reached=False)
             
             distance_error = self.compute_distance(target_pose, self.current_pose)
+            relative_y = self.compute_relative_y(self.current_pose, target_pose)
             self.get_logger().info(
                 f'Current Pose: {self.current_pose.position.x:.2f}, {self.current_pose.position.y:.2f}, '
                 f'Desired Pose: {target_pose.position.x:.2f}, {target_pose.position.y:.2f}, '
                 f'Distance Error: {distance_error:.2f}, '
-                f'Min Distance Error: {min_distance_error:.4f}')
+                f'Min Distance Error: {min_distance_error:.4f}, '
+                f'Relative Y: {relative_y:.4f}, ')
 
             if abs(distance_error) < self.tolerance:
                 self.stop()
@@ -142,7 +145,19 @@ class StrafeControlServer(Node):
                 result.target_reached = True
                 return result
             
-            relative_y = self.compute_relative_y(self.current_pose, target_pose)
+            
+            if self.last_y is not None:
+                if np.sign(relative_y)!=np.sign(self.last_y):
+                    self.get_logger().warn('Goal Missed by Y')
+                    self.stop()
+                    self.get_logger().info(f'Current Distance Error: {distance_error:.3f} '
+                                       f'Minimum Distance Error: {min_distance_error:.3f}')
+                    goal_handle.succeed()
+                    result = GoToSide.Result()
+                    result.target_reached = True
+                    return result
+
+            self.last_y = relative_y
 
             # robot has passed by closest point to goal on current path
             if (distance_error > min_distance_error + self.error_buffer):
