@@ -27,7 +27,7 @@ class TagMapPublisher(Node):
         for tag in tag_list:
             tf_msg = TransformStamped()
             tf_msg.header.stamp = self.get_clock().now().to_msg()
-            tf_msg.header.frame_id = 'map'
+            tf_msg.header.frame_id = 'optitrack'
             tf_msg.child_frame_id = f"tag36h11:{tag['id']}"
 
             tf_msg.transform.translation.x = float(tag['x'])
