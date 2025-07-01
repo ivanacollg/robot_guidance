@@ -15,7 +15,7 @@ def generate_launch_description():
 
     # Parameter file path
     pkg_path = get_package_share_directory('robot_guidance_pkg')
-    map_file = os.path.join(pkg_path, 'maps', 'empty_map.yaml')
+    map_file = os.path.join(pkg_path, 'maps', 'map.yaml')
     param_file = os.path.join(pkg_path, 'config', 'nav2_params.yaml')
     tag_map_file = os.path.join(pkg_path, 'config', 'tag_map.yaml')
     rviz_file = os.path.join(pkg_path, 'rviz', 'nav2.rviz')
