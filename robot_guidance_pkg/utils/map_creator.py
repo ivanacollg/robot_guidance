@@ -30,7 +30,7 @@ map_width_m = 29.10
 map_height_m = 4.95
 border_thickness_m = 0.3
 resolution = 0.05  # meters per pixel
-map_origin = (-5.3, -4.75, 0.0)  # user-defined map origin: (x, y, yaw) # Yaw is not taken into account
+map_origin = (-4.98, -4.75, 0.0)  # user-defined map origin: (x, y, yaw) # Yaw is not taken into account
 
 # ----------------------------
 # Obstacle Parameters (in meters)
@@ -45,8 +45,8 @@ obstacle_origin_m = (19.5, -1.5)  # (x, y) bottom-right corner
 fence_width_m = 1.8288 # Single fence panel
 fence_offset = 0.45
 fence_angle = 20
-fence1_origin_m = (0.0, -4.45)  # (x, y) bottom-right corner
-fence2_origin_m = (10.0, -4.45)  # (x, y) bottom-right corner
+fence1_origin_m = (0.35, -4.45)  # (x, y) Top right courner
+fence2_origin_m = (10.0, -4.45)  # (x, y) top-right corner
 
 # ----------------------------
 # Compute pixel dimensions
